@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>StarCases - Telegram Web App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-theme-bg-color: #0f172a;
+            --tg-theme-secondary-bg-color: #1e293b;
+            --tg-theme-text-color: #f8fafc;
+            --tg-theme-hint-color: #94a3b8;
+            --tg-theme-link-color: #38bdf8;
+            --tg-theme-button-color: #0ea5e9;
+            --tg-theme-button-text-color: #ffffff;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --rarity-common: #94a3b8;
+            --rarity-rare: #3b82f6;
+            --rarity-epic: #a855f7;
+            --rarity-legendary: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Layout */
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding: 0 4px;
+        }
+
+        /* Tabs Navigation */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--tg-theme-hint-color);
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .tab-item.active {
+            color: var(--tg-theme-button-color);
+        }
+
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Cases Grid */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .case-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s active;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-card:active {
+            transform: scale(0.95);
+        }
+
+        .case-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            display: block;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+
+        .case-name {
+            font-size: 18px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .case-price {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .btn-view {
+            margin-top: 12px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--tg-theme-hint-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* Profile Section */
+        .profile-header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .avatar-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid var(--tg-theme-button-color);
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .balance-card {
+            background: var(--accent-gradient);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Modal / Roulette Screen */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--tg-theme-bg-color);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .close-btn {
+            font-size: 28px;
+            background: none;
+            border: none;
+            color: var(--tg-theme-text-color);
+            padding: 10px;
+        }
+
+        /* Roulette Engine */
+        .roulette-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .roulette-container {
+            width: 100%;
+            height: 140px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin: 40px 0;
+            border: 2px solid rgba(255,255,255,0.05);
+        }
+
+        .roulette-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #ef4444;
+            z-index: 10;
+            transform: translateX(-50%);
+            box-shadow: 0 0 15px #ef4444;
+        }
+
+        .roulette-track {
+            display: flex;
+            position: absolute;
+            top: 10px;
+            left: 0;
+            transition: transform 7s cubic-bezier(0.1, 0, 0.1, 1);
+        }
+
+        .roulette-item {
+            min-width: 120px;
+            height: 120px;
+            margin: 0 5px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 4px solid #ccc;
+        }
+
+        .roulette-item img, .roulette-item .emoji {
+            font-size: 40px;
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .roulette-item .name {
+            font-size: 10px;
+            text-align: center;
+            padding: 0 4px;
+            opacity: 0.8;
+        }
+
+        /* Win Result Overlay */
+        .win-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .win-card {
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 0 50px rgba(56, 189, 248, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .win-img {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .win-title {
+            font-size: 16px;
+            color: var(--tg-theme-hint-color);
+            text-transform: uppercase;
+        }
+
+        .win-name {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+
+        .win-price {
+            font-size: 20px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        /* Drop List Styles */
+        .drop-list {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .drop-item {
+            display: flex;
+            align-items: center;
+            background: var(--tg-theme-secondary-bg-color);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .drop-img {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-right: 15px;
+        }
+
+        .drop-info {
+            flex: 1;
+        }
+
+        .drop-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .drop-price {
+            font-size: 14px;
+            color: #fbbf24;
+        }
+
+        .drop-chance {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .btn-main {
+            background: var(--tg-theme-button-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 20px;
+        }
+
+        /* Hide logic */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--tg-theme-bg-color);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* NFT Card Specific */
+        .nft-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader">
+    <div style="text-align: center;">
+        <div style="font-size: 50px; animation: bounce 1s infinite;">⭐</div>
+        <p>Загрузка...</p>
+    </div>
+</div>
+
+<div id="app">
+    <main id="page-cases" class="page active container">
+        <h1 class="section-title">Открыть кейсы</h1>
+        <div class="cases-grid" id="cases-container">
+            </div>
+    </main>
+
+    <main id="page-deposit" class="page container">
+        <h1 class="section-title">Пополнение</h1>
+        <div style="background: var(--tg-theme-secondary-bg-color); padding: 40px 20px; border-radius: 20px; text-align: center;">
+            <div style="font-size: 60px; margin-bottom: 20px;">🚧</div>
+            <h3>Раздел в разработке</h3>
+            <p style="color: var(--tg-theme-hint-color);">Пополнение баланса через Telegram Stars будет доступно скоро.</p>
+        </div>
+    </main>
+
+    <main id="page-profile" class="page container">
+        <div class="profile-header">
+            <div class="avatar-container">
+                <img src="https://via.placeholder.com/100" id="user-avatar" class="avatar-img" alt="Avatar">
+            </div>
+            <h2 class="user-name" id="user-name">Пользователь</h2>
+            <div class="balance-card">
+                <div class="balance-label">Мой баланс</div>
+                <div class="balance-value">
+                    <span id="user-balance">1000</span>
+                    <span style="font-size: 28px;">⭐</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="tab-bar">
+        <div class="tab-item active" onclick="switchTab('cases', this)">
+            <span class="tab-icon">🎁</span>
+            <span>Кейсы</span>
+        </div>
+        <div class="tab-item" onclick="switchTab('deposit', this)">
+            <span class="tab-icon">💳</span>
+            <span>Депозит</span>
+        </div>
+        <div class="tab-item" onclick="switchTab('profile', this)">
+            <span class="tab-icon">👤</span>
+            <span>Профиль</span>
+        </div>
+    </nav>
+</div>
+
+<div id="modal-screen" class="modal">
+    <div class="modal-header">
+        <h3 id="modal-title">Кейс</h3>
+        <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    
+    <div id="modal-content-view" class="drop-list">
+        </div>
+
+    <div id="modal-roulette-view" class="roulette-wrapper" style="display: none;">
+        <div class="roulette-container">
+            <div class="roulette-line"></div>
+            <div class="roulette-track" id="roulette-track">
+                </div>
+        </div>
+        <div class="win-overlay" id="win-overlay">
+            <div class="win-card">
+                <div class="win-title">Вы выиграли!</div>
+                <div id="win-visual" class="win-img"></div>
+                <div id="win-name" class="win-name">Предмет</div>
+                <div id="win-price" class="win-price">0 ⭐</div>
+                <button class="btn-main" onclick="closeModal()">Забрать</button>
+            </div>
+        </div>
+        <button id="btn-open-start" class="btn-main" onclick="startSpin()">Открыть за <span id="btn-price-val">0</span> ⭐</button>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // App State
+    let balance = 1000;
+    let currentCase = null;
+    let isSpinning = false;
+
+    // Data Models
+    const ITEMS = {
+        STAR1: { name: "1 Звезда", icon: "⭐", price: 1, type: "currency", rarity: "common" },
+        BEAR: { name: "Мишка", icon: "🧸", price: 15, type: "gift", rarity: "rare" },
+        CAKE: { name: "Тортик", icon: "🎂", price: 50, type: "gift", rarity: "rare" },
+        ROCKET: { name: "Ракета", icon: "🚀", price: 100, type: "gift", rarity: "epic" },
+        CANDLE: { name: "B-day Candle", icon: "🕯️", img: "https://nft.tg/img/candle.png", price: 300, type: "nft", rarity: "legendary" },
+        TON_ROCK: { name: "TON Rock", icon: "💎", img: "https://nft.tg/img/rock.png", price: 500, type: "nft", rarity: "legendary" },
+        GOLD_CROWN: { name: "Gold Crown", icon: "👑", img: "https://nft.tg/img/crown.png", price: 800, type: "nft", rarity: "legendary" }
+    };
+
+    const CASES = [
+        {
+            id: 'free',
+            name: "Бесплатный",
+            icon: "📦",
+            price: 0,
+            items: [
+                { item: ITEMS.STAR1, chance: 95 },
+                { item: ITEMS.BEAR, chance: 4 },
+                { item: ITEMS.CAKE, chance: 1 }
+            ]
+        },
+        {
+            id: 'cheap',
+            name: "Бомж кейс",
+            icon: "🗑️",
+            price: 25,
+            items: [
+                { item: ITEMS.STAR1, chance: 60 },
+                { item: ITEMS.BEAR, chance: 30 },
+                { item: ITEMS.CAKE, chance: 10 }
+            ]
+        },
+        {
+            id: 'normal',
+            name: "Нормалик",
+            icon: "💼",
+            price: 50,
+            items: [
+                { item: ITEMS.BEAR, chance: 50 },
+                { item: ITEMS.CAKE, chance: 40 },
+                { item: ITEMS.ROCKET, chance: 10 }
+            ]
+        },
+        {
+            id: 'rocket',
+            name: "Ракетка",
+            icon: "🚀",
+            price: 100,
+            items: [
+                { item: ITEMS.CAKE, chance: 60 },
+                { item: ITEMS.ROCKET, chance: 39.9 },
+                { item: ITEMS.CANDLE, chance: 0.1 }
+            ]
+        },
+        {
+            id: 'world',
+            name: "Мир",
+            icon: "🌍",
+            price: 500,
+            items: [
+                { item: ITEMS.CANDLE, chance: 50 },
+                { item: ITEMS.TON_ROCK, chance: 35 },
+                { item: ITEMS.GOLD_CROWN, chance: 15 }
+            ]
+        }
+    ];
+
+    // Initialize UI
+    function init() {
+        // User Data
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('user-name').textContent = user.username || (user.first_name + ' ' + (user.last_name || ''));
+            if (user.photo_url) {
+                document.getElementById('user-avatar').src = user.photo_url;
+            }
+        }
+        updateBalanceDisplay();
+
+        // Render Cases
+        const container = document.getElementById('cases-container');
+        CASES.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'case-card';
+            card.innerHTML = `
+                <span class="case-icon">${c.icon}</span>
+                <div class="case-name">${c.name}</div>
+                <div class="case-price">${c.price} ⭐</div>
+                <button class="btn-view" onclick="showCasePreview('${c.id}')">Шансы</button>
+                <button class="btn-main" style="padding: 10px; font-size: 14px; margin-top: 10px;" onclick="openRoulette('${c.id}')">Открыть</button>
+            `;
+            container.appendChild(card);
+        });
+
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+        }, 1000);
+    }
+
+    function updateBalanceDisplay() {
+        document.getElementById('user-balance').textContent = balance;
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + tabId).classList.add('active');
+        
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function showCasePreview(caseId) {
+        const c = CASES.find(x => x.id === caseId);
+        currentCase = c;
+        
+        document.getElementById('modal-title').textContent = c.name;
+        document.getElementById('modal-content-view').style.display = 'block';
+        document.getElementById('modal-roulette-view').style.display = 'none';
+        
+        const list = document.getElementById('modal-content-view');
+        list.innerHTML = '';
+        
+        c.items.forEach(i => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'drop-item';
+            itemDiv.innerHTML = `
+                <div class="drop-img">${i.item.icon}</div>
+                <div class="drop-info">
+                    <div class="drop-name">${i.item.name}</div>
+                    <div class="drop-price">${i.item.price} ⭐</div>
+                </div>
+                <div class="drop-chance">${i.chance}%</div>
+            `;
+            list.appendChild(itemDiv);
+        });
+        
+        document.getElementById('modal-screen').style.display = 'flex';
+    }
+
+    function openRoulette(caseId) {
+        const c = CASES.find(x => x.id === caseId);
+        currentCase = c;
+
+        if (balance < c.price) {
+            tg.showAlert("Недостаточно звезд на балансе!");
+            return;
+        }
+
+        document.getElementById('modal-title').textContent = "Открытие: " + c.name;
+        document.getElementById('modal-content-view').style.display = 'none';
+        document.getElementById('modal-roulette-view').style.display = 'flex';
+        document.getElementById('win-overlay').style.display = 'none';
+        document.getElementById('btn-open-start').style.display = 'block';
+        document.getElementById('btn-price-val').textContent = c.price;
+        
+        prepareRouletteTrack();
+        document.getElementById('modal-screen').style.display = 'flex';
+    }
+
+    function prepareRouletteTrack() {
+        const track = document.getElementById('roulette-track');
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0)';
+        track.innerHTML = '';
+
+        // Generate 50 items for scrolling
+        for (let i = 0; i < 60; i++) {
+            const randomItem = getRandomItem(currentCase.items);
+            const itemEl = document.createElement('div');
+            itemEl.className = 'roulette-item';
+            itemEl.style.borderBottomColor = getRarityColor(randomItem.rarity);
+            itemEl.innerHTML = `
+                <span class="emoji">${randomItem.icon}</span>
+                <span class="name">${randomItem.name}</span>
+            `;
+            track.appendChild(itemEl);
+        }
+    }
+
+    function getRandomItem(items) {
+        const rand = Math.random() * 100;
+        let cumulative = 0;
+        for (const i of items) {
+            cumulative += i.chance;
+            if (rand <= cumulative) return i.item;
+        }
+        return items[0].item;
+    }
+
+    function getRarityColor(rarity) {
+        switch(rarity) {
+            case 'legendary': return '#eab308';
+            case 'epic': return '#a855f7';
+            case 'rare': return '#3b82f6';
+            default: return '#94a3b8';
+        }
+    }
+
+    function startSpin() {
+        if (isSpinning) return;
+        if (balance < currentCase.price) return;
+
+        isSpinning = true;
+        balance -= currentCase.price;
+        updateBalanceDisplay();
+        tg.HapticFeedback.notificationOccurred('success');
+
+        const track = document.getElementById('roulette-track');
+        const itemWidth = 130; // 120px + 10px margin
+        const winIndex = 45; // The 45th item will be the winner
+        
+        // Predetermine winner
+        const winner = getRandomItem(currentCase.items);
+        
+        // Inject winner at index
+        const winNode = track.children[winIndex];
+        winNode.innerHTML = `<span class="emoji">${winner.icon}</span><span class="name">${winner.name}</span>`;
+        winNode.style.borderBottomColor = getRarityColor(winner.rarity);
+
+        // Animation
+        const offset = (winIndex * itemWidth) - (window.innerWidth / 2) + (itemWidth / 2);
+        
+        track.style.transition = 'transform 7s cubic-bezier(0.1, 0, 0.1, 1)';
+        track.style.transform = `translateX(-${offset}px)`;
+
+        document.getElementById('btn-open-start').style.display = 'none';
+
+        setTimeout(() => {
+            showWin(winner);
+        }, 7500);
+    }
+
+    function showWin(item) {
+        isSpinning = false;
+        balance += item.price; // Add won item value back to "virtual balance"
+        updateBalanceDisplay();
+        
+        const overlay = document.getElementById('win-overlay');
+        document.getElementById('win-visual').textContent = item.icon;
+        document.getElementById('win-name').textContent = item.name;
+        document.getElementById('win-price').textContent = `+${item.price} ⭐`;
+        
+        overlay.style.display = 'flex';
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function closeModal() {
+        if (isSpinning) return;
+        document.getElementById('modal-screen').style.display = 'none';
+    }
+
+    // Start
+    init();
+
+</script>
+</body>
+</html>
+
