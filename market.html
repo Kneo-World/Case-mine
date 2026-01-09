@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Case-Mine | Онлайн Рынок</title>
+    <title>Case-Mine | Marketplace</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,123 +13,226 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        :root { --tg-bg: #0b0e14; --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
-        body { font-family: 'Inter', sans-serif; background: var(--tg-bg); color: white; margin: 0; }
-        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; }
-        .page { padding: 20px; padding-bottom: 100px; min-height: 100vh; }
-        ::-webkit-scrollbar { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-color: #000000;
+            --card-bg: #1c1c1e;
+            --accent: #007aff;
+            --text-main: #ffffff;
+            --text-secondary: #8e8e93;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .season-banner {
+            background: linear-gradient(90deg, #2c2c2e 0%, #1c1c1e 100%);
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gift-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .gift-image-bg {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            margin-bottom: 12px;
+        }
+
+        .price-btn {
+            background: var(--accent);
+            color: white;
+            border-radius: 14px;
+            padding: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .price-btn:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .price-btn.disabled {
+            background: #2c2c2e;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .nav-bar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(255,255,255,0.1);
+        }
+
+        /* Анимация появления */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
+<body class="pb-28">
 
-    <header class="sticky top-0 z-50 bg-[#0b0e14]/90 backdrop-blur-md p-4 flex justify-between items-center border-b border-white/5">
-        <div class="glass px-3 py-1 flex items-center gap-2">
-            <span class="text-yellow-400">⭐</span>
-            <span id="market-balance" class="font-bold text-sm">0</span>
+    <header class="sticky top-0 z-50 bg-black/60 backdrop-blur-xl p-4 flex justify-between items-center">
+        <div class="flex items-center gap-2 bg-[#1c1c1e] px-3 py-1.5 rounded-full border border-white/5">
+            <span class="text-yellow-400 text-sm">⭐</span>
+            <span id="market-balance" class="font-bold text-sm tracking-tight">0</span>
         </div>
-        <div class="text-[10px] font-bold text-blue-500 uppercase tracking-tighter">Online Market</div>
+        <div class="flex gap-4">
+             <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+             <i data-lucide="bell" class="w-5 h-5 text-gray-400"></i>
+        </div>
     </header>
 
-    <main class="page">
-        <div class="mb-6">
-            <h2 class="text-xl font-bold">Рынок игроков</h2>
-            <p class="text-[9px] opacity-40 uppercase">Предметы появляются здесь мгновенно</p>
+    <main class="p-4">
+        <div class="season-banner rounded-3xl p-5 mb-8 flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-black italic tracking-tighter italic">Season 2</h3>
+                <p class="text-[11px] font-bold text-yellow-500 uppercase tracking-widest bg-yellow-500/10 inline-block px-2 py-0.5 rounded-md mt-1">is open</p>
+            </div>
+            <div class="relative">
+                <span class="text-5xl">🚀</span>
+            </div>
         </div>
 
-        <div id="online-grid" class="grid grid-cols-2 gap-3">
-            <div class="col-span-2 text-center py-20 opacity-30 text-xs uppercase italic">Загрузка товаров...</div>
+        <div class="flex justify-between items-end mb-5">
+            <h2 class="text-3xl font-bold tracking-tight">All items</h2>
+            <span class="text-blue-500 text-sm font-semibold">Filter</span>
+        </div>
+
+        <div id="online-grid" class="grid grid-cols-2 gap-4">
+            <div class="col-span-2 flex flex-col items-center py-20 opacity-40">
+                <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-xs uppercase font-bold tracking-widest">Loading Market...</p>
+            </div>
         </div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/5 flex justify-around items-center z-50">
-        <button onclick="window.location.href='index.html'" class="flex flex-col items-center gap-1 opacity-50">
-            <i data-lucide="package" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold uppercase">Кейсы</span>
+    <nav class="fixed bottom-0 left-0 right-0 h-20 nav-bar flex justify-around items-center px-6 z-50">
+        <button onclick="window.location.href='index.html'" class="flex flex-col items-center gap-1 opacity-40 transition-opacity">
+            <i data-lucide="package" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold uppercase">Store</span>
         </button>
         <button class="flex flex-col items-center gap-1 text-blue-500">
-            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-            <span class="text-[10px] font-bold uppercase">Маркет</span>
+            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold uppercase">Market</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 opacity-40">
+            <i data-lucide="user" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold uppercase">Profile</span>
         </button>
     </nav>
 
     <script>
+        // Тот же конфиг, что и в index.html
         const firebaseConfig = {
             apiKey: "AIzaSyDnmAysvjn6Zu-pbddOhXDt1ohnZaY1Fcw",
             authDomain: "casemine-online.firebaseapp.com",
             projectId: "casemine-online",
+            databaseURL: "https://casemine-online-default-rtdb.firebaseio.com", // Добавь URL если есть
             storageBucket: "casemine-online.firebasestorage.app",
             messagingSenderId: "750443799326",
             appId: "1:750443799326:web:edec309f732337e39a1f0f"
         };
 
-        // Инициализация базы
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
 
-        // Ключи данных (должны быть такими же как в index.html)
         const SHARED_KEY = 'casemine_inventory';
         const BALANCE_KEY = 'balance';
 
         let balance = parseFloat(localStorage.getItem(BALANCE_KEY)) || 0;
         let inventory = JSON.parse(localStorage.getItem(SHARED_KEY)) || [];
 
-        function updateStorage() {
-            document.getElementById('market-balance').innerText = balance.toFixed(0);
+        function updateUI() {
+            document.getElementById('market-balance').innerText = Math.floor(balance);
             localStorage.setItem(BALANCE_KEY, balance);
             localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
         }
 
-        // Функция покупки
-        window.buyItem = function(key, price, name, emoji) {
+        window.buyGift = function(key, price, name, emoji) {
             if (balance < price) {
-                tg.showAlert("Недостаточно звезд! ⭐");
+                tg.showAlert("Not enough stars! ⭐");
                 return;
             }
 
-            tg.showConfirm(`Купить ${name} за ${price}⭐?`, (ok) => {
+            tg.showConfirm(`Buy ${name} for ⭐ ${price}?`, (ok) => {
                 if (ok) {
                     const itemRef = db.ref('online_market/' + key);
                     
                     itemRef.remove().then(() => {
                         balance -= price;
-                        inventory.unshift({ name, emoji, value: price });
-                        updateStorage();
+                        inventory.unshift({ name, emoji, value: price, id: Date.now() });
+                        updateUI();
                         tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert("✅ Куплено! Предмет в вашем профиле.");
+                        tg.showAlert("Successfully purchased!");
                     }).catch(() => {
-                        tg.showAlert("Ошибка: товар уже забрали.");
+                        tg.showAlert("This item was already sold.");
                     });
                 }
             });
         };
 
-        // Живое обновление маркета
+        // Живое обновление из базы
         db.ref('online_market').on('value', (snapshot) => {
             const data = snapshot.val();
             const grid = document.getElementById('online-grid');
             grid.innerHTML = "";
 
             if (!data) {
-                grid.innerHTML = "<div class='col-span-2 text-center py-20 opacity-20 text-[10px] uppercase font-bold'>На рынке пока пусто...</div>";
+                grid.innerHTML = "<div class='col-span-2 text-center py-20 opacity-20 text-xs uppercase font-bold tracking-widest'>Market is empty</div>";
                 return;
             }
 
             Object.keys(data).forEach(id => {
                 const item = data[id];
-                const isMine = item.sellerId == (tg.initDataUnsafe?.user?.id || "0");
+                
+                // --- ФИЛЬТР: Пропускаем, если в названии есть "Звезд" ---
+                if (item.name.toLowerCase().includes("звезд") || item.name.toLowerCase().includes("stars")) {
+                    return;
+                }
+
+                const isMyItem = item.sellerId == (tg.initDataUnsafe?.user?.id || "0");
 
                 grid.innerHTML += `
-                    <div class="glass p-4 flex flex-col items-center text-center">
-                        <span class="text-4xl mb-2">${item.emoji}</span>
-                        <div class="text-[10px] font-bold uppercase truncate w-full">${item.name}</div>
-                        <div class="text-[8px] opacity-40 mb-3 text-blue-400 italic">СЕЛЛЕР: ${item.seller}</div>
+                    <div class="gift-card fade-in">
+                        <div class="gift-image-bg">
+                            <span class="text-6xl drop-shadow-2xl">${item.emoji}</span>
+                        </div>
+                        <div class="px-1 mb-4">
+                            <p class="text-[10px] text-blue-500 font-black uppercase tracking-widest mb-0.5">Gift</p>
+                            <h4 class="font-bold text-sm truncate">${item.name}</h4>
+                            <p class="text-[9px] text-gray-500 font-medium truncate mt-0.5">By ${item.seller}</p>
+                        </div>
                         
-                        <button onclick="buyItem('${id}', ${item.value}, '${item.name}', '${item.emoji}')" 
-                                class="w-full py-2 rounded-xl text-[10px] font-bold transition-all ${isMine ? 'bg-white/5 opacity-30' : 'bg-blue-600 active:scale-95'}"
-                                ${isMine ? 'disabled' : ''}>
-                            ${isMine ? 'МОЙ ТОВАР' : 'КУПИТЬ ' + item.value + '⭐'}
+                        <button onclick="buyGift('${id}', ${item.value}, '${item.name}', '${item.emoji}')" 
+                                class="price-btn ${isMyItem ? 'disabled' : ''}">
+                            ${isMyItem ? 'Your Item' : '⭐ ' + item.value}
                         </button>
                     </div>
                 `;
@@ -137,7 +240,7 @@
         });
 
         lucide.createIcons();
-        updateStorage();
+        updateUI();
         tg.expand();
     </script>
 </body>
