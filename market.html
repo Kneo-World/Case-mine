@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Case-Mine | Открытие кейсов</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        :root { --tg-bg: #0f1218; --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
+        body { font-family: 'Inter', sans-serif; background: var(--tg-bg); color: white; margin: 0; overflow: hidden; }
+        .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
+        
+        /* Эффект снега */
+        .snowflake { position: absolute; background: white; border-radius: 50%; opacity: 0.2; pointer-events: none; animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(100vh); } }
+
+        /* Рулетка */
+        .roulette-wrapper { position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        .roulette-container { display: flex; position: absolute; left: 0; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); }
+        .roulette-item { min-width: 100px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.05); }
+        .roulette-pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: var(--accent); z-index: 10; box-shadow: 0 0 15px var(--accent); }
+
+        .premium-border { border: 2px solid #facc15 !important; box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); }
+        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; position: relative; z-index: 1; }
+        .page.active { display: block; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="snow" class="fixed inset-0"></div>
+
+    <header class="flex justify-between items-center p-4 relative z-10">
+        <div class="glass px-3 py-1 flex items-center gap-2">
+            <span class="text-yellow-400 text-sm">⭐</span>
+            <span id="header-balance" class="font-bold text-sm">0.00</span>
+        </div>
+        <div class="w-8 h-8 rounded-full border border-blue-500 overflow-hidden glass" id="pfp-box">
+            <img src="" id="user-pfp" class="w-full h-full hidden">
+            <div id="pfp-stub" class="w-full h-full flex items-center justify-center text-[10px] font-bold">?</div>
+        </div>
+    </header>
+
+    <main>
+        <section id="page-cases" class="page active">
+            <h2 class="text-2xl font-bold mb-4">Магазин</h2>
+            <div class="grid grid-cols-2 gap-4" id="cases-grid"></div>
+        </section>
+
+        <section id="page-profile" class="page">
+            <div class="glass p-6 mb-4 flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-bold" id="profile-stub">?</div>
+                <div>
+                    <h3 id="profile-name" class="text-xl font-bold">Пользователь</h3>
+                    <p class="text-xs text-blue-400" id="inv-stats">0 предметов</p>
+                </div>
+            </div>
+            
+            <button onclick="window.location.href='https://kneo-world.github.io/Case-mine-market/'" class="w-full glass py-4 mb-6 flex items-center justify-center gap-2 font-bold text-sm text-yellow-500 active:scale-95 transition-transform">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i> ПЕРЕЙТИ НА МАРКЕТ
+            </button>
+
+            <div id="inventory-grid" class="grid grid-cols-3 gap-2 pb-10"></div>
+        </section>
+    </main>
+
+    <div id="case-modal" class="fixed inset-0 z-50 flex items-end justify-center hidden">
+        <div class="absolute inset-0 bg-black/80" onclick="closeModal()"></div>
+        <div class="glass w-full max-w-md p-6 rounded-t-[30px] z-10 translate-y-full transition-transform duration-300" id="modal-content">
+            <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
+            <h2 id="modal-title" class="text-2xl font-bold text-center mb-1">Кейс</h2>
+            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold"></p>
+
+            <div id="roulette-view" class="hidden">
+                <div class="roulette-wrapper mb-6">
+                    <div class="roulette-pointer"></div>
+                    <div class="roulette-container" id="roulette-strip"></div>
+                </div>
+            </div>
+
+            <div id="droplist-view">
+                <p class="text-[10px] opacity-40 uppercase font-bold mb-3 text-center">Содержимое</p>
+                <div class="grid grid-cols-4 gap-2 mb-8" id="drop-list-items"></div>
+            </div>
+
+            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg active:scale-95 transition-all">Открыть кейс</button>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/5 flex justify-around items-center px-4 z-20">
+        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 text-blue-500">
+            <i data-lucide="package"></i><span class="text-[10px] font-bold">КЕЙСЫ</span>
+        </button>
+        <button onclick="showPage('profile')" id="nav-profile" class="flex flex-col items-center gap-1 opacity-50">
+            <i data-lucide="user"></i><span class="text-[10px] font-bold">ПРОФИЛЬ</span>
+        </button>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        const SHARED_KEY = 'casemine_inventory';
+        const BALANCE_KEY = 'balance';
+
+        const ITEMS = {
+            S5: { name: '5 Звезд', emoji: '⭐', value: 5 },
+            BEAR: { name: 'Подарок Мишка', emoji: '🧸', value: 15 },
+            CAKE: { name: 'Подарок Торт', emoji: '🎂', value: 50 },
+            ROCKET: { name: 'Подарок Ракета', emoji: '🚀', value: 100 },
+            CANDLE: { name: 'Свеча B-Day', emoji: '🕯️', value: 500, nft: true }
+        };
+
+        const CASES = [
+            { id: 'free', name: 'Бесплатный', price: 0, color: 'from-green-500', loot: [{item: ITEMS.S5, chance: 90}, {item: ITEMS.BEAR, chance: 10}] },
+            { id: 'normal', name: 'Обычный', price: 50, color: 'from-blue-500', loot: [{item: ITEMS.BEAR, chance: 60}, {item: ITEMS.CAKE, chance: 40}] },
+            { id: 'rocket', name: 'Ракета', price: 100, color: 'from-purple-500', loot: [{item: ITEMS.CAKE, chance: 70}, {item: ITEMS.ROCKET, chance: 30}] },
+            { id: 'world', name: 'Мировой', price: 500, color: 'from-yellow-500', loot: [{item: ITEMS.CANDLE, chance: 100}] }
+        ];
+
+        let balance = parseFloat(localStorage.getItem(BALANCE_KEY)) || 100.00;
+        let inventory = JSON.parse(localStorage.getItem(SHARED_KEY)) || [];
+        let isSpinning = false;
+
+        function init() {
+            lucide.createIcons();
+            renderCases();
+            updateUI();
+            createSnow();
+            
+            if (tg.initDataUnsafe?.user) {
+                const u = tg.initDataUnsafe.user;
+                document.getElementById('profile-name').innerText = u.first_name;
+                document.getElementById('profile-stub').innerText = u.first_name[0];
+                if(u.photo_url) {
+                    document.getElementById('user-pfp').src = u.photo_url;
+                    document.getElementById('user-pfp').classList.remove('hidden');
+                    document.getElementById('pfp-stub').classList.add('hidden');
+                }
+            }
+            tg.expand();
+        }
+
+        function updateUI() {
+            document.getElementById('header-balance').innerText = balance.toFixed(0);
+            document.getElementById('inv-stats').innerText = `${inventory.length} предметов в коллекции`;
+            
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = inventory.map((item, idx) => `
+                <div class="glass p-2 flex flex-col items-center justify-center aspect-square text-center relative ${item.nft ? 'premium-border' : ''}">
+                    <span class="text-2xl">${item.emoji}</span>
+                    <span class="text-[8px] opacity-40 truncate w-full mt-1">${item.name}</span>
+                    <button onclick="sellForStars(${idx})" class="mt-1 bg-white/10 text-[7px] font-bold px-1 py-0.5 rounded text-blue-400">ПРОДАТЬ ${item.value}⭐</button>
+                </div>
+            `).join('');
+
+            localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
+            localStorage.setItem(BALANCE_KEY, balance);
+        }
+
+        function sellForStars(idx) {
+            const item = inventory[idx];
+            balance += item.value;
+            inventory.splice(idx, 1);
+            tg.HapticFeedback.notificationOccurred('success');
+            updateUI();
+        }
+
+        function renderCases() {
+            const grid = document.getElementById('cases-grid');
+            CASES.forEach(c => {
+                const div = document.createElement('div');
+                div.className = `glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-2 active:scale-95 transition-all`;
+                div.onclick = () => openCaseModal(c);
+                div.innerHTML = `<div class="text-4xl">📦</div><p class="font-bold text-sm">${c.name}</p><p class="text-xs text-blue-400 font-bold">${c.price || 'БЕСПЛАТНО'}</p>`;
+                grid.appendChild(div);
+            });
+        }
+
+        function openCaseModal(c) {
+            activeCase = c;
+            document.getElementById('modal-title').innerText = c.name;
+            document.getElementById('modal-price').innerText = c.price === 0 ? "Ежедневный бонус" : c.price + " ⭐";
+            document.getElementById('drop-list-items').innerHTML = c.loot.map(l => `
+                <div class="glass p-2 flex flex-col items-center relative">
+                    <span class="text-[8px] absolute top-1 right-1 text-blue-400">${l.chance}%</span>
+                    <span class="text-xl">${l.item.emoji}</span>
+                </div>
+            `).join('');
+            document.getElementById('case-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('modal-content').style.transform = 'translateY(0)', 10);
+            document.getElementById('roulette-view').classList.add('hidden');
+            document.getElementById('droplist-view').classList.remove('hidden');
+            document.getElementById('open-btn').style.display = 'block';
+        }
+
+        function startOpening() {
+            if (balance < activeCase.price) return tg.showAlert("Нужно больше звезд!");
+            isSpinning = true;
+            balance -= activeCase.price;
+            updateUI();
+
+            document.getElementById('droplist-view').classList.add('hidden');
+            document.getElementById('open-btn').style.display = 'none';
+            document.getElementById('roulette-view').classList.remove('hidden');
+
+            const rand = Math.random() * 100;
+            let cum = 0; let winner = activeCase.loot[0].item;
+            for(let l of activeCase.loot) { cum += l.chance; if(rand <= cum) { winner = l.item; break; } }
+
+            const strip = document.getElementById('roulette-strip');
+            strip.style.transition = 'none'; strip.style.transform = 'translateX(0)';
+            let html = '';
+            for(let i=0; i<60; i++) {
+                const r = activeCase.loot[Math.floor(Math.random()*activeCase.loot.length)].item;
+                html += `<div class="roulette-item"><span class="text-3xl">${r.emoji}</span></div>`;
+            }
+            strip.innerHTML = html;
+            strip.children[55].innerHTML = `<span class="text-3xl">${winner.emoji}</span>`;
+
+            setTimeout(() => {
+                const target = (55 * 100) - (document.querySelector('.roulette-wrapper').offsetWidth / 2) + 50;
+                strip.style.transition = 'transform 5s cubic-bezier(0.1, 0, 0.1, 1)';
+                strip.style.transform = `translateX(-${target}px)`;
+            }, 50);
+
+            setTimeout(() => {
+                if(winner.name.includes('Звезд')) balance += winner.value;
+                else inventory.unshift({...winner, id: Date.now()});
+                updateUI();
+                isSpinning = false;
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showConfirm(`Выпало: ${winner.name}`, () => closeModal());
+            }, 5500);
+        }
+
+        function closeModal() { if(!isSpinning) { document.getElementById('modal-content').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300); } }
+        
+        function showPage(p) {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${p}`).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.add('opacity-50'));
+            document.getElementById(`nav-${p}`).classList.remove('opacity-50');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function createSnow() {
+            const snow = document.getElementById('snow');
+            for(let i=0; i<25; i++) {
+                const f = document.createElement('div');
+                f.className = 'snowflake';
+                f.style.left = Math.random() * 100 + 'vw';
+                f.style.width = f.style.height = (Math.random()*2+2)+'px';
+                f.style.animationDuration = (Math.random()*3+4)+'s';
+                snow.appendChild(f);
+            }
+        }
+
+        // Слушатель обновлений Маркета
+        window.addEventListener('storage', () => {
+            balance = parseFloat(localStorage.getItem(BALANCE_KEY));
+            inventory = JSON.parse(localStorage.getItem(SHARED_KEY));
+            updateUI();
+        });
+
+        window.onload = init;
+    </script>
+</body>
+</html>
