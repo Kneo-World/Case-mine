@@ -3,101 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>1case Web App - Visible Odds</title>
+    <title>Case-Mine | Opener</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-        :root {
-            --tg-theme-bg-color: #0f1218;
-            --accent-blue: #007aff;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--tg-theme-bg-color);
-            color: white;
-            margin: 0;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; }
+        :root { --tg-bg: #0f1218; --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
+        body { font-family: 'Inter', sans-serif; background: var(--tg-bg); color: white; margin: 0; overflow: hidden; }
+        .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
         
-        /* Snow Animation */
-        .snow-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 0; }
-        .snowflake { position: absolute; background: white; border-radius: 50%; opacity: 0.3; animation: fall linear infinite; }
+        /* Snow Effect */
+        .snowflake { position: absolute; background: white; border-radius: 50%; opacity: 0.3; pointer-events: none; animation: fall linear infinite; }
         @keyframes fall { to { transform: translateY(100vh); } }
 
-        /* Roulette Styling */
-        .roulette-wrapper { position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
+        /* Roulette Engine */
+        .roulette-wrapper { position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
         .roulette-container { display: flex; position: absolute; left: 0; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); }
         .roulette-item { min-width: 100px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.05); }
-        .roulette-pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: var(--accent-blue); z-index: 10; box-shadow: 0 0 15px var(--accent-blue); }
+        .roulette-pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: var(--accent); z-index: 10; box-shadow: 0 0 15px var(--accent); }
 
-        .premium-border { border: 2px solid #facc15; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); }
-        .nav-active { color: var(--accent-blue); }
-        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; padding-top: 10px; z-index: 1; position: relative; }
+        .premium-border { border: 2px solid #facc15 !important; box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); }
+        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; position: relative; z-index: 1; }
         .page.active { display: block; }
         ::-webkit-scrollbar { display: none; }
-
-        /* Odds Badge */
-        .odds-badge {
-            background: rgba(0, 122, 255, 0.2);
-            color: #70b5ff;
-            font-size: 9px;
-            padding: 2px 5px;
-            border-radius: 6px;
-            font-weight: bold;
-            border: 1px solid rgba(0, 122, 255, 0.3);
-        }
     </style>
 </head>
 <body>
+    <div id="snow" class="fixed inset-0 pointer-events-none"></div>
 
-    <div class="snow-container" id="snow"></div>
-
-    <header class="flex justify-between items-center p-4 z-10 relative">
-        <div class="flex items-center gap-2 glass px-3 py-1">
+    <header class="flex justify-between items-center p-4 relative z-10">
+        <div class="glass px-3 py-1 flex items-center gap-2">
             <span class="text-yellow-400 text-sm">⭐</span>
-            <span id="header-balance" class="font-bold text-sm">0.99</span>
+            <span id="header-balance" class="font-bold text-sm">0.00</span>
         </div>
-        <div id="user-avatar" class="w-8 h-8 rounded-full border border-blue-500 overflow-hidden">
-            <img src="https://via.placeholder.com/32" id="pfp-img">
+        <div class="w-8 h-8 rounded-full border border-blue-500 overflow-hidden" id="user-pfp-container">
+            <img src="" id="user-pfp" class="w-full h-full hidden">
         </div>
     </header>
 
     <main>
         <section id="page-cases" class="page active">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">Cases</h2>
-                <span class="text-[10px] opacity-50 px-2 py-1 glass">Verifiable Odds <i data-lucide="shield-check" class="inline w-3 h-3"></i></span>
-            </div>
+            <h2 class="text-2xl font-bold mb-4">Open Cases</h2>
             <div class="grid grid-cols-2 gap-4" id="cases-grid"></div>
-        </section>
-
-        <section id="page-deposit" class="page">
-            <div class="flex flex-col items-center justify-center h-full text-center">
-                <i data-lucide="shopping-cart" class="w-16 h-16 text-blue-500 mb-4"></i>
-                <h2 class="text-xl font-bold">Market</h2>
-                <p class="text-gray-400 mt-2 px-10">P2P Trading coming soon.</p>
-            </div>
         </section>
 
         <section id="page-profile" class="page">
             <div class="glass p-6 mb-4 flex items-center gap-4">
-                <img src="" id="profile-pfp" class="w-16 h-16 rounded-2xl border-2 border-blue-500">
+                <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-bold" id="profile-initial">?</div>
                 <div>
-                    <h3 id="profile-name" class="text-xl font-bold">User</h3>
-                    <p class="text-xs text-blue-400">Inventory Value: <span id="inv-value">0</span> ⭐</p>
+                    <h3 id="profile-name" class="text-xl font-bold">Player</h3>
+                    <p class="text-xs text-blue-400" id="inv-stats">0 Items in Inventory</p>
                 </div>
             </div>
-            <h3 class="font-bold mb-3 flex items-center gap-2 px-1">Inventory</h3>
-            <div id="inventory-grid" class="grid grid-cols-3 gap-2 pb-10"></div>
+            <button onclick="window.location.href='https://kneo-world.github.io/Case-mine-market/'" class="w-full glass py-4 mb-6 flex items-center justify-center gap-2 font-bold text-sm text-yellow-500">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i> OPEN MARKETPLACE
+            </button>
+            <div id="inventory-grid" class="grid grid-cols-3 gap-2"></div>
         </section>
     </main>
 
@@ -105,9 +67,8 @@
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
         <div class="glass w-full max-w-md p-6 rounded-t-[30px] z-10 translate-y-full transition-transform duration-300" id="modal-content">
             <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
-            
             <h2 id="modal-title" class="text-2xl font-bold text-center mb-1">Case</h2>
-            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold text-sm">50 ⭐</p>
+            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold"></p>
 
             <div id="roulette-view" class="hidden">
                 <div class="roulette-wrapper mb-6">
@@ -117,25 +78,17 @@
             </div>
 
             <div id="droplist-view">
-                <div class="flex justify-between items-center mb-3">
-                    <p class="text-[10px] opacity-50 uppercase font-bold tracking-wider">Loot Table & Odds</p>
-                    <p class="text-[9px] text-green-500 font-bold">Fair Play Guaranteed</p>
-                </div>
+                <p class="text-[10px] opacity-40 uppercase font-bold mb-3 tracking-widest text-center">Possible Drops & Odds</p>
                 <div class="grid grid-cols-4 gap-2 mb-8" id="drop-list-items"></div>
             </div>
 
-            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/30 active:scale-95 transition-all">
-                Open Case
-            </button>
+            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg">Open Case</button>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/10 flex justify-around items-center px-4 z-20">
-        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 nav-active">
-            <i data-lucide="package"></i><span class="text-[10px] font-bold">CASES</span>
-        </button>
-        <button onclick="showPage('deposit')" id="nav-deposit" class="flex flex-col items-center gap-1 opacity-50">
-            <i data-lucide="trending-up"></i><span class="text-[10px] font-bold">MARKET</span>
+    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/5 flex justify-around items-center px-4 z-20">
+        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 text-blue-500">
+            <i data-lucide="box"></i><span class="text-[10px] font-bold">CASES</span>
         </button>
         <button onclick="showPage('profile')" id="nav-profile" class="flex flex-col items-center gap-1 opacity-50">
             <i data-lucide="user"></i><span class="text-[10px] font-bold">PROFILE</span>
@@ -143,171 +96,160 @@
     </nav>
 
     <script>
+        const tg = window.Telegram.WebApp;
+        const SHARED_KEY = 'casemine_inventory';
+        const BALANCE_KEY = 'balance';
+
+        // 1. DATA (Keep this consistent with Market)
         const ITEMS = {
-            S1: { id: 1, name: '1 Star', emoji: '⭐', value: 1, rarity: 'common' },
-            S5: { id: 2, name: '5 Stars', emoji: '⭐', value: 5, rarity: 'common' },
-            BEAR: { id: 3, name: 'Bear', emoji: '🧸', value: 15, rarity: 'rare' },
-            CAKE: { id: 4, name: 'Cake', emoji: '🎂', value: 50, rarity: 'legendary' },
-            ROCKET: { id: 5, name: 'Rocket', emoji: '🚀', value: 100, rarity: 'legendary' },
-            CANDLE: { id: 6, name: 'B-day Candle', emoji: '🕯️', value: 500, rarity: 'nft', nft: true },
-            GOLD_MONKEY: { id: 7, name: 'Gold Monkey', emoji: '🐒', value: 800, rarity: 'nft', nft: true }
+            S1: { name: '1 Star', emoji: '⭐', value: 1, rarity: 'common' },
+            S5: { name: '5 Stars', emoji: '⭐', value: 5, rarity: 'common' },
+            BEAR: { name: 'Bear Gift', emoji: '🧸', value: 15, rarity: 'rare' },
+            CAKE: { name: 'Cake Gift', emoji: '🎂', value: 50, rarity: 'legendary' },
+            ROCKET: { name: 'Rocket Gift', emoji: '🚀', value: 100, rarity: 'legendary' },
+            CANDLE: { name: 'B-Day Candle', emoji: '🕯️', value: 500, rarity: 'nft', nft: true },
+            MONKEY: { name: 'Gold Monkey', emoji: '🐒', value: 800, rarity: 'nft', nft: true }
         };
 
         const CASES = [
-            { id: 'free', name: 'Free', price: 0, color: 'from-green-500', loot: [
-                { item: ITEMS.S1, chance: 80 }, { item: ITEMS.BEAR, chance: 15 }, { item: ITEMS.CAKE, chance: 5 }
-            ]},
-            { id: 'bum', name: 'Bum', price: 25, color: 'from-orange-500', loot: [
-                { item: ITEMS.S5, chance: 70 }, { item: ITEMS.BEAR, chance: 25 }, { item: ITEMS.CAKE, chance: 5 }
-            ]},
-            { id: 'normal', name: 'Normal', price: 50, color: 'from-blue-500', loot: [
-                { item: ITEMS.BEAR, chance: 60 }, { item: ITEMS.CAKE, chance: 30 }, { item: ITEMS.ROCKET, chance: 10 }
-            ]},
-            { id: 'rocket', name: 'Rocket', price: 100, color: 'from-purple-500', loot: [
-                { item: ITEMS.CAKE, chance: 70 }, { item: ITEMS.ROCKET, chance: 29.9 }, { item: ITEMS.CANDLE, chance: 0.1 }
-            ]},
-            { id: 'world', name: 'World', price: 500, color: 'from-yellow-500', loot: [
-                { item: ITEMS.CANDLE, chance: 95 }, { item: ITEMS.GOLD_MONKEY, chance: 5 }
-            ]}
+            { id: 'free', name: 'Free', price: 0, color: 'from-green-500', loot: [{item: ITEMS.S1, chance: 90}, {item: ITEMS.BEAR, chance: 10}] },
+            { id: 'bum', name: 'Bum', price: 25, color: 'from-orange-500', loot: [{item: ITEMS.S5, chance: 70}, {item: ITEMS.BEAR, chance: 30}] },
+            { id: 'rocket', name: 'Rocket', price: 100, color: 'from-purple-500', loot: [{item: ITEMS.CAKE, chance: 70}, {item: ITEMS.ROCKET, chance: 29.9}, {item: ITEMS.CANDLE, chance: 0.1}] },
+            { id: 'world', name: 'World', price: 500, color: 'from-yellow-500', loot: [{item: ITEMS.CANDLE, chance: 95}, {item: ITEMS.MONKEY, chance: 5}] }
         ];
 
-        let balance = parseFloat(localStorage.getItem('balance')) || 100.00;
-        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+        let balance = parseFloat(localStorage.getItem(BALANCE_KEY)) || 100.00;
+        let inventory = JSON.parse(localStorage.getItem(SHARED_KEY)) || [];
         let activeCase = null;
         let isSpinning = false;
-        const tg = window.Telegram.WebApp;
 
+        // 2. CORE SYNC LOGIC
+        function syncWinToMarket(winnerItem) {
+            inventory.unshift({
+                ...winnerItem,
+                id: Date.now(),
+                owner: tg.initDataUnsafe?.user?.id || 'local'
+            });
+            localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
+            localStorage.setItem(BALANCE_KEY, balance);
+            updateUI();
+        }
+
+        // 3. UI ENGINE
         function init() {
             lucide.createIcons();
-            createSnow();
             renderCases();
             updateUI();
-            if (tg.initDataUnsafe?.user) {
-                const u = tg.initDataUnsafe.user;
-                document.getElementById('profile-name').innerText = u.first_name;
-                if(u.photo_url) document.querySelectorAll('[id*="pfp"]').forEach(el => el.src = u.photo_url);
+            createSnow();
+            
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                document.getElementById('profile-name').innerText = user.first_name;
+                document.getElementById('profile-initial').innerText = user.first_name[0];
+                if(user.photo_url) {
+                    const img = document.getElementById('user-pfp');
+                    img.src = user.photo_url;
+                    img.classList.remove('hidden');
+                }
             }
             tg.expand();
         }
 
-        function createSnow() {
-            const container = document.getElementById('snow');
-            for(let i=0; i<30; i++) {
-                const flake = document.createElement('div');
-                flake.className = 'snowflake';
-                flake.style.left = Math.random() * 100 + 'vw';
-                flake.style.width = flake.style.height = Math.random() * 3 + 2 + 'px';
-                flake.style.animationDuration = Math.random() * 3 + 4 + 's';
-                container.appendChild(flake);
-            }
+        function updateUI() {
+            document.getElementById('header-balance').innerText = balance.toFixed(2);
+            document.getElementById('inv-stats').innerText = `${inventory.length} Items in Inventory`;
+            
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = inventory.map(item => `
+                <div class="glass p-2 flex flex-col items-center justify-center aspect-square text-center ${item.nft ? 'premium-border' : ''}">
+                    <span class="text-2xl">${item.emoji}</span>
+                    <span class="text-[8px] opacity-50 truncate w-full mt-1">${item.name}</span>
+                </div>
+            `).join('');
         }
 
         function renderCases() {
             const grid = document.getElementById('cases-grid');
             CASES.forEach(c => {
-                const card = document.createElement('div');
-                card.className = `glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-3 active:scale-95 transition-transform cursor-pointer`;
-                card.onclick = () => openCaseModal(c);
-                card.innerHTML = `<div class="text-3xl">📦</div><div class="text-center"><p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-blue-400 font-bold">${c.price === 0 ? 'CLAIM' : c.price + ' ⭐'}</p></div>`;
-                grid.appendChild(card);
+                const el = document.createElement('div');
+                el.className = `glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-3 active:scale-95 transition-transform cursor-pointer`;
+                el.onclick = () => openCaseModal(c);
+                el.innerHTML = `<div class="text-4xl">📦</div><div><p class="font-bold text-sm">${c.name}</p><p class="text-xs text-blue-400 font-bold">${c.price === 0 ? 'FREE' : c.price + ' ⭐'}</p></div>`;
+                grid.appendChild(el);
             });
         }
 
         function openCaseModal(c) {
             activeCase = c;
-            document.getElementById('modal-title').innerText = c.name;
-            document.getElementById('modal-price').innerText = c.price === 0 ? "Daily Free" : `${c.price} ⭐`;
+            document.getElementById('modal-title').innerText = c.name + " Case";
+            document.getElementById('modal-price').innerText = c.price === 0 ? "Daily Claim" : c.price + " ⭐";
             
-            const dropList = document.getElementById('drop-list-items');
-            dropList.innerHTML = '';
-            c.loot.forEach(l => {
-                const div = document.createElement('div');
-                div.className = "flex flex-col items-center glass p-2 gap-1 relative overflow-hidden";
-                div.innerHTML = `
-                    <span class="odds-badge">${l.chance}%</span>
+            const list = document.getElementById('drop-list-items');
+            list.innerHTML = c.loot.map(l => `
+                <div class="glass p-2 flex flex-col items-center relative overflow-hidden">
+                    <span class="text-[8px] absolute top-1 right-1 font-bold text-blue-400">${l.chance}%</span>
                     <span class="text-xl">${l.item.emoji}</span>
-                    <span class="text-[8px] opacity-50 truncate w-full text-center">${l.item.name}</span>
-                `;
-                dropList.appendChild(div);
-            });
+                </div>
+            `).join('');
 
-            const modal = document.getElementById('case-modal');
-            modal.classList.remove('hidden');
+            document.getElementById('case-modal').classList.remove('hidden');
             setTimeout(() => document.getElementById('modal-content').style.transform = 'translateY(0)', 10);
             document.getElementById('roulette-view').classList.add('hidden');
             document.getElementById('droplist-view').classList.remove('hidden');
             document.getElementById('open-btn').style.display = 'block';
         }
 
+        // 4. SPIN LOGIC
         function startOpening() {
             if (balance < activeCase.price) return tg.showAlert("Insufficient Stars");
             isSpinning = true;
             balance -= activeCase.price;
             updateUI();
-            tg.HapticFeedback.impactOccurred('medium');
 
             document.getElementById('droplist-view').classList.add('hidden');
             document.getElementById('open-btn').style.display = 'none';
             document.getElementById('roulette-view').classList.remove('hidden');
 
+            // Weighted Math
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+            let winner = activeCase.loot[0].item;
+            for(let l of activeCase.loot) {
+                cumulative += l.chance;
+                if(rand <= cumulative) { winner = l.item; break; }
+            }
+
             const strip = document.getElementById('roulette-strip');
             strip.style.transition = 'none';
             strip.style.transform = 'translateX(0)';
 
-            // Weighted Random Selection
-            const rand = Math.random() * 100;
-            let cumulative = 0;
-            let winnerItem = activeCase.loot[0].item;
-            for(let l of activeCase.loot) {
-                cumulative += l.chance;
-                if(rand <= cumulative) { winnerItem = l.item; break; }
-            }
-
-            // Fill Strip
             let stripHTML = '';
             for(let i=0; i<60; i++) {
-                const randomLoot = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)].item;
-                stripHTML += `<div class="roulette-item"><span class="text-3xl">${randomLoot.emoji}</span></div>`;
+                const r = activeCase.loot[Math.floor(Math.random()*activeCase.loot.length)].item;
+                stripHTML += `<div class="roulette-item"><span class="text-3xl">${r.emoji}</span></div>`;
             }
             strip.innerHTML = stripHTML;
-            
-            const winningIndex = 55;
-            strip.children[winningIndex].innerHTML = `<span class="text-3xl">${winnerItem.emoji}</span>`;
-            if(winnerItem.nft) strip.children[winningIndex].classList.add('premium-border');
+            const winIdx = 55;
+            strip.children[winIdx].innerHTML = `<span class="text-3xl">${winner.emoji}</span>`;
+            if(winner.nft) strip.children[winIdx].classList.add('premium-border');
 
             setTimeout(() => {
-                const itemWidth = 100;
-                const center = document.querySelector('.roulette-wrapper').offsetWidth / 2;
-                const targetX = (winningIndex * itemWidth) - center + (itemWidth / 2);
+                const targetX = (winIdx * 100) - (document.querySelector('.roulette-wrapper').offsetWidth / 2) + 50;
                 strip.style.transition = 'transform 5s cubic-bezier(0.1, 0, 0.1, 1)';
                 strip.style.transform = `translateX(-${targetX}px)`;
             }, 50);
 
             setTimeout(() => {
-                inventory.unshift(winnerItem);
-                if(winnerItem.value && winnerItem.name.includes('Star')) balance += winnerItem.value;
-                updateUI();
+                if(winner.name.includes('Star')) balance += winner.value;
+                syncWinToMarket(winner);
                 isSpinning = false;
                 tg.HapticFeedback.notificationOccurred('success');
-                tg.showConfirm(`Won: ${winnerItem.name}`, () => closeModal());
+                tg.showConfirm(`Won: ${winner.name}`, () => closeModal());
             }, 5500);
         }
 
-        function updateUI() {
-            document.getElementById('header-balance').innerText = balance.toFixed(2);
-            document.getElementById('inv-value').innerText = inventory.reduce((acc, curr) => acc + curr.value, 0);
-            const invGrid = document.getElementById('inventory-grid');
-            invGrid.innerHTML = '';
-            inventory.forEach(item => {
-                const d = document.createElement('div');
-                d.className = `glass p-2 flex flex-col items-center aspect-square justify-center ${item.nft ? 'premium-border' : ''}`;
-                d.innerHTML = `<span class="text-2xl">${item.emoji}</span><span class="text-[8px] opacity-60 mt-1">${item.name}</span>`;
-                invGrid.appendChild(d);
-            });
-            localStorage.setItem('balance', balance);
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-        }
-
+        function closeModal() { if(!isSpinning) { document.getElementById('modal-content').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300); } }
+        
         function showPage(p) {
             document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
             document.getElementById(`page-${p}`).classList.add('active');
@@ -316,7 +258,26 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        function closeModal() { if(!isSpinning) { document.getElementById('modal-content').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300); } }
+        function createSnow() {
+            const container = document.getElementById('snow');
+            for(let i=0; i<20; i++) {
+                const f = document.createElement('div');
+                f.className = 'snowflake';
+                f.style.left = Math.random() * 100 + 'vw';
+                f.style.width = f.style.height = (Math.random()*3+2)+'px';
+                f.style.animationDuration = (Math.random()*3+5)+'s';
+                container.appendChild(f);
+            }
+        }
+
+        // Listen for Marketplace Sells (Balance Updates)
+        window.addEventListener('storage', (e) => {
+            if(e.key === BALANCE_KEY || e.key === SHARED_KEY) {
+                balance = parseFloat(localStorage.getItem(BALANCE_KEY));
+                inventory = JSON.parse(localStorage.getItem(SHARED_KEY));
+                updateUI();
+            }
+        });
 
         window.onload = init;
     </script>
