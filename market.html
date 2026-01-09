@@ -7,6 +7,10 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         :root { --tg-bg: #0b0e14; --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
@@ -23,17 +27,17 @@
             <span class="text-yellow-400">⭐</span>
             <span id="market-balance" class="font-bold text-sm">0</span>
         </div>
-        <div class="text-xs font-bold text-blue-400">ONLINE MARKET</div>
+        <div class="text-xs font-bold text-blue-400 uppercase">Онлайн Маркет</div>
     </header>
 
     <main class="page">
-        <div class="mb-6">
-            <h2 class="text-xl font-bold">Вещи других игроков</h2>
-            <p class="text-[10px] opacity-50">Обновляется в реальном времени</p>
+        <div class="mb-6 text-center">
+            <h2 class="text-xl font-bold italic text-blue-400">ВИТРИНА ТОВАРОВ</h2>
+            <p class="text-[9px] opacity-40 uppercase tracking-widest mt-1">Здесь вещи всех игроков Case-Mine</p>
         </div>
 
         <div id="online-grid" class="grid grid-cols-2 gap-3">
-            <div class="col-span-2 text-center py-10 opacity-50 text-xs">Загрузка товаров...</div>
+            <div class="col-span-2 text-center py-10 opacity-30 text-xs uppercase tracking-tighter">Загрузка товаров...</div>
         </div>
     </main>
 
@@ -48,12 +52,8 @@
         </button>
     </nav>
 
-    <script type="module">
-        // Импорт Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        // Твой конфиг
+    <script>
+        // Тот же конфиг, что и в index.html
         const firebaseConfig = {
             apiKey: "AIzaSyDnmAysvjn6Zu-pbddOhXDt1ohnZaY1Fcw",
             authDomain: "casemine-online.firebaseapp.com",
@@ -63,85 +63,81 @@
             appId: "1:750443799326:web:edec309f732337e39a1f0f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const marketRef = ref(db, 'online_market');
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
         const tg = window.Telegram.WebApp;
 
-        // Данные из localStorage (синхрон с кейсами)
         const SHARED_KEY = 'casemine_inventory';
         const BALANCE_KEY = 'balance';
 
         let balance = parseFloat(localStorage.getItem(BALANCE_KEY)) || 0;
         let inventory = JSON.parse(localStorage.getItem(SHARED_KEY)) || [];
 
-        function updateHeader() {
+        function saveAndRefresh() {
             document.getElementById('market-balance').innerText = balance.toFixed(0);
             localStorage.setItem(BALANCE_KEY, balance);
             localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
         }
 
-        // Покупка товара
-        window.buyItem = function(key, price, name, emoji) {
+        // ПОКУПКА ТОВАРА
+        function buyItem(key, price, name, emoji) {
             if (balance < price) {
-                tg.showAlert("Недостаточно звезд для покупки!");
+                tg.showAlert("❌ Недостаточно ⭐ звезд!");
                 return;
             }
 
             tg.showConfirm(`Купить ${name} за ${price} ⭐?`, (ok) => {
                 if (ok) {
-                    const itemRef = ref(db, 'online_market/' + key);
+                    const itemRef = db.ref('online_market/' + key);
                     
-                    // Удаляем из базы (бронируем покупку)
-                    remove(itemRef).then(() => {
+                    // Пробуем удалить из базы (если кто-то не купил раньше)
+                    itemRef.remove().then(() => {
                         balance -= price;
                         inventory.push({ name, emoji, value: price });
-                        updateHeader();
+                        saveAndRefresh();
                         tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert("Куплено! Предмет добавлен в ваш профиль.");
+                        tg.showAlert("🎉 Поздравляем! Предмет теперь у вас.");
                     }).catch(() => {
-                        tg.showAlert("Ошибка: товар уже купил кто-то другой!");
+                        tg.showAlert("Ошибка: товар уже продан или снят с продажи.");
                     });
                 }
             });
-        };
+        }
 
-        // Слушатель базы данных
-        onValue(marketRef, (snapshot) => {
+        // ОБНОВЛЕНИЕ СПИСКА В РЕАЛЬНОМ ВРЕМЕНИ
+        db.ref('online_market').on('value', (snapshot) => {
             const data = snapshot.val();
             const grid = document.getElementById('online-grid');
             grid.innerHTML = "";
 
             if (!data) {
-                grid.innerHTML = "<p class='col-span-2 text-center opacity-50 py-10'>На рынке пока нет товаров</p>";
+                grid.innerHTML = "<p class='col-span-2 text-center opacity-30 py-10 uppercase text-xs'>Рынок пуст</p>";
                 return;
             }
 
             Object.keys(data).forEach(key => {
                 const item = data[key];
-                const isMine = item.sellerId == tg.initDataUnsafe?.user?.id;
+                const isMine = item.sellerId == (tg.initDataUnsafe?.user?.id || "0");
 
                 grid.innerHTML += `
-                    <div class="glass p-4 flex flex-col items-center text-center relative">
+                    <div class="glass p-4 flex flex-col items-center text-center">
                         <span class="text-4xl mb-2">${item.emoji}</span>
                         <div class="text-[10px] font-bold mb-1">${item.name}</div>
-                        <div class="text-[8px] opacity-40 mb-3 text-blue-300 uppercase">Продавец: ${item.seller}</div>
+                        <div class="text-[8px] opacity-40 mb-3 text-blue-300 uppercase italic">Продавец: ${item.seller}</div>
                         
                         <button onclick="buyItem('${key}', ${item.value}, '${item.name}', '${item.emoji}')" 
-                                class="${isMine ? 'bg-white/10 opacity-50' : 'bg-blue-600 active:scale-95'} w-full py-2 rounded-xl text-[10px] font-bold transition-all"
+                                class="${isMine ? 'bg-white/10 opacity-30 cursor-not-allowed' : 'bg-blue-600 active:scale-95'} w-full py-2 rounded-xl text-[10px] font-bold transition-all"
                                 ${isMine ? 'disabled' : ''}>
-                            ${isMine ? 'ТВОЙ ТОВАР' : 'КУПИТЬ ' + item.value + ' ⭐'}
+                            ${isMine ? 'ВАШ ЛОТ' : 'КУПИТЬ ЗА ' + item.value + ' ⭐'}
                         </button>
                     </div>
                 `;
             });
         });
 
-        // Инициализация
         lucide.createIcons();
-        updateHeader();
+        saveAndRefresh();
         tg.expand();
-
     </script>
 </body>
 </html>
