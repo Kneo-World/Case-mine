@@ -141,23 +141,35 @@
             tg.expand();
         }
 
-        function updateUI() {
-            document.getElementById('header-balance').innerText = balance.toFixed(0);
-            document.getElementById('inv-stats').innerText = `${inventory.length} предметов в коллекции`;
+      function updateUI() {
+    // Обновляем текст баланса и статистики
+    document.getElementById('header-balance').innerText = balance.toFixed(0);
+    document.getElementById('inv-stats').innerText = `${inventory.length} предметов в коллекции`;
+    
+    const grid = document.getElementById('inventory-grid');
+    
+    // Очищаем и рисуем заново
+    grid.innerHTML = inventory.map((item, idx) => `
+        <div class="glass p-2 flex flex-col items-center justify-center aspect-square text-center relative ${item.nft ? 'premium-border' : ''}">
+            <span class="text-2xl">${item.emoji}</span>
+            <span class="text-[8px] opacity-40 truncate w-full mt-1">${item.name}</span>
             
-            const grid = document.getElementById('inventory-grid');
-            grid.innerHTML = inventory.map((item, idx) => `
-                <div class="glass p-2 flex flex-col items-center justify-center aspect-square text-center relative ${item.nft ? 'premium-border' : ''}">
-                    <span class="text-2xl">${item.emoji}</span>
-                    <span class="text-[8px] opacity-40 truncate w-full mt-1">${item.name}</span>
-                    <button onclick="sellForStars(${idx})" class="mt-1 bg-white/10 text-[7px] font-bold px-1 py-0.5 rounded text-blue-400">ПРОДАТЬ ${item.value}⭐</button>
-                </div>
-            `).join('');
+            <div class="flex flex-col gap-1 w-full mt-2">
+                <button onclick="sellForStars(${idx})" class="bg-white/10 text-[7px] font-bold py-1 rounded text-blue-400 uppercase">
+                    Продать ${item.value}⭐
+                </button>
+                
+                <button onclick="listToOnlineMarket(${idx})" class="bg-blue-600 text-[7px] font-bold py-1 rounded text-white uppercase">
+                    На рынок
+                </button>
+            </div>
+        </div>
+    `).join('');
 
-            localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
-            localStorage.setItem(BALANCE_KEY, balance);
-        }
-
+    // Сохраняем данные локально
+    localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
+    localStorage.setItem(BALANCE_KEY, balance);
+}
         function sellForStars(idx) {
             const item = inventory[idx];
             balance += item.value;
