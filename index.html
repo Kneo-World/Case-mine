@@ -42,6 +42,7 @@
             min-height: 100vh;
             padding-bottom: 80px;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .app-container {
@@ -142,6 +143,7 @@
             transition: var(--transition);
             cursor: pointer;
             position: relative;
+            user-select: none;
         }
 
         .tab.active {
@@ -251,11 +253,18 @@
             cursor: pointer;
             transition: var(--transition);
             width: 100%;
+            font-size: 14px;
+            user-select: none;
         }
 
         .case-button:hover {
             opacity: 0.9;
             transform: scale(1.05);
+        }
+
+        .case-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
         }
 
         /* Items Grid */
@@ -398,6 +407,7 @@
             z-index: 1000;
             padding: 20px;
             animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
         .modal-overlay.active {
@@ -414,6 +424,7 @@
             padding: 25px;
             position: relative;
             animation: modalIn 0.4s ease;
+            box-shadow: var(--shadow);
         }
 
         @keyframes modalIn {
@@ -448,6 +459,7 @@
             justify-content: center;
             border-radius: 50%;
             transition: var(--transition);
+            user-select: none;
         }
 
         .modal-close:hover {
@@ -482,6 +494,14 @@
             background: var(--tg-theme-secondary-bg-color);
             margin-right: 2px;
             border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .wheel-item.highlight {
+            border-color: gold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transform: scale(1.05);
         }
 
         .result-card {
@@ -511,6 +531,13 @@
             font-size: 32px;
             color: gold;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-price i {
+            margin-right: 10px;
         }
 
         /* Footer */
@@ -538,6 +565,7 @@
             align-items: center;
             justify-content: center;
             color: var(--tg-theme-hint-color);
+            user-select: none;
         }
 
         .footer-tab.active {
@@ -585,6 +613,7 @@
             display: block;
             transition: var(--transition);
             box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
+            user-select: none;
         }
 
         .spin-button:hover {
@@ -595,6 +624,51 @@
         .spin-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--tg-theme-button-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* NFT Image */
+        .nft-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 2px solid gold;
         }
     </style>
 </head>
@@ -641,8 +715,8 @@
                     <div class="case-icon">🎁</div>
                     <div class="case-name">Бесплатный</div>
                     <div class="case-price"><i class="fas fa-star"></i> 0</div>
-                    <button class="case-button open-btn">Открыть</button>
-                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                    <button class="case-button open-btn" data-case="free">Открыть</button>
+                    <button class="case-button secondary view-drop-btn" data-case="free">Что выпадает</button>
                 </div>
                 
                 <!-- Case 2 -->
@@ -650,8 +724,8 @@
                     <div class="case-icon">📦</div>
                     <div class="case-name">Бомж кейс</div>
                     <div class="case-price"><i class="fas fa-star"></i> 25</div>
-                    <button class="case-button open-btn">Открыть</button>
-                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                    <button class="case-button open-btn" data-case="bumzh">Открыть</button>
+                    <button class="case-button secondary view-drop-btn" data-case="bumzh">Что выпадает</button>
                 </div>
                 
                 <!-- Case 3 -->
@@ -659,8 +733,8 @@
                     <div class="case-icon">💎</div>
                     <div class="case-name">Нормалик</div>
                     <div class="case-price"><i class="fas fa-star"></i> 50</div>
-                    <button class="case-button open-btn">Открыть</button>
-                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                    <button class="case-button open-btn" data-case="normal">Открыть</button>
+                    <button class="case-button secondary view-drop-btn" data-case="normal">Что выпадает</button>
                 </div>
                 
                 <!-- Case 4 -->
@@ -668,8 +742,8 @@
                     <div class="case-icon">🚀</div>
                     <div class="case-name">Ракетка</div>
                     <div class="case-price"><i class="fas fa-star"></i> 100</div>
-                    <button class="case-button open-btn">Открыть</button>
-                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                    <button class="case-button open-btn" data-case="rocket">Открыть</button>
+                    <button class="case-button secondary view-drop-btn" data-case="rocket">Что выпадает</button>
                 </div>
                 
                 <!-- Case 5 -->
@@ -677,8 +751,8 @@
                     <div class="case-icon">🌍</div>
                     <div class="case-name">Мир</div>
                     <div class="case-price"><i class="fas fa-star"></i> 500</div>
-                    <button class="case-button open-btn">Открыть</button>
-                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                    <button class="case-button open-btn" data-case="world">Открыть</button>
+                    <button class="case-button secondary view-drop-btn" data-case="world">Что выпадает</button>
                 </div>
             </div>
         </div>
@@ -692,7 +766,7 @@
                 <div class="deposit-text">
                     Раздел депозита находится в разработке. Скоро вы сможете пополнять баланс Telegram Stars!
                 </div>
-                <button class="spin-button" style="background: var(--tg-theme-button-color); color: white;" onclick="alert('Функция в разработке')">
+                <button class="spin-button" style="background: var(--tg-theme-button-color); color: white;" id="deposit-btn">
                     Перейти к пополнению
                 </button>
             </div>
@@ -710,15 +784,15 @@
                     <h3 style="margin-bottom: 15px; font-size: 18px;">📊 Статистика</h3>
                     <div style="display: flex; justify-content: space-between;">
                         <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">12</div>
+                            <div style="font-size: 24px; font-weight: 700;" id="stats-cases">0</div>
                             <div style="font-size: 12px; opacity: 0.8;">Открыто кейсов</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700; color: gold;">350</div>
+                            <div style="font-size: 24px; font-weight: 700; color: gold;" id="stats-stars">0</div>
                             <div style="font-size: 12px; opacity: 0.8;">Всего звёзд</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">3</div>
+                            <div style="font-size: 24px; font-weight: 700;" id="stats-nft">0</div>
                             <div style="font-size: 12px; opacity: 0.8;">NFT получено</div>
                         </div>
                     </div>
@@ -726,31 +800,8 @@
             </div>
             
             <h2 style="margin: 30px 0 20px 0; font-size: 20px;">🎁 Последние выигрыши</h2>
-            <div class="items-grid">
-                <div class="item-card">
-                    <div class="item-icon">🧸</div>
-                    <div class="item-name">Мишка</div>
-                    <div class="item-price">15 ⭐</div>
-                    <div class="item-chance">10%</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-icon">⭐</div>
-                    <div class="item-name">5 звезд</div>
-                    <div class="item-price">5 ⭐</div>
-                    <div class="item-chance">40%</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-icon">🎂</div>
-                    <div class="item-name">Тортик</div>
-                    <div class="item-price">50 ⭐</div>
-                    <div class="item-chance">5%</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-icon">🚀</div>
-                    <div class="item-name">Ракета</div>
-                    <div class="item-price">100 ⭐</div>
-                    <div class="item-chance">2%</div>
-                </div>
+            <div class="items-grid" id="last-wins">
+                <!-- Will be filled dynamically -->
             </div>
         </div>
     </div>
@@ -759,7 +810,7 @@
     <div class="modal-overlay" id="drop-modal">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">🎁 Что выпадает в кейсе</div>
+                <div class="modal-title" id="drop-title">🎁 Что выпадает в кейсе</div>
                 <button class="modal-close" id="close-drop-modal">&times;</button>
             </div>
             <div id="drop-content">
@@ -789,6 +840,11 @@
         </div>
     </div>
 
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div id="notification-text"></div>
+    </div>
+
     <!-- Footer Tabs -->
     <div class="footer">
         <div class="footer-tab active" data-tab="cases">
@@ -807,63 +863,88 @@
 
     <script>
         // Telegram Web App initialization
-        const tg = window.Telegram.WebApp;
+        const tg = window.Telegram?.WebApp || {
+            expand: () => {},
+            ready: () => {},
+            initDataUnsafe: { user: null },
+            showAlert: (msg) => { alert(msg); return Promise.resolve(true); },
+            showPopup: (params) => { alert(params.message); return Promise.resolve(true); }
+        };
+        
+        // Initialize Telegram Web App
         tg.expand();
         tg.ready();
         
-        // User data
-        const user = tg.initDataUnsafe.user;
-        let balance = 150;
+        // User data and state
+        const user = tg.initDataUnsafe?.user || {
+            id: 123456789,
+            username: 'telegram_user',
+            first_name: 'Telegram',
+            last_name: 'User'
+        };
         
-        // Cases data
+        let balance = 150;
+        let openedCases = 0;
+        let totalStarsWon = 0;
+        let nftCount = 0;
+        let lastWins = [];
+        
+        // Cases data with proper drop rates
         const casesData = {
             free: {
                 name: "Бесплатный кейс",
                 price: 0,
+                color: "#4facfe",
                 items: [
-                    { icon: "⭐", name: "1 звезда", price: 1, chance: 90 },
-                    { icon: "🧸", name: "Мишка", price: 15, chance: 7 },
-                    { icon: "🎂", name: "Тортик", price: 50, chance: 3 }
+                    { type: "star", icon: "⭐", name: "1 звезда", price: 1, chance: 90 },
+                    { type: "gift", icon: "🧸", name: "Мишка", price: 15, chance: 7 },
+                    { type: "gift", icon: "🎂", name: "Тортик", price: 50, chance: 3 }
                 ]
             },
             bumzh: {
                 name: "Бомж кейс",
                 price: 25,
+                color: "#43e97b",
                 items: [
-                    { icon: "⭐", name: "5 звезд", price: 5, chance: 70 },
-                    { icon: "🧸", name: "Мишка", price: 15, chance: 20 },
-                    { icon: "🎂", name: "Тортик", price: 50, chance: 9 },
-                    { icon: "⭐", name: "15 звезд", price: 15, chance: 1 }
+                    { type: "star", icon: "⭐", name: "5 звезд", price: 5, chance: 60 },
+                    { type: "star", icon: "⭐", name: "10 звезд", price: 10, chance: 20 },
+                    { type: "gift", icon: "🧸", name: "Мишка", price: 15, chance: 10 },
+                    { type: "gift", icon: "🎂", name: "Тортик", price: 50, chance: 9 },
+                    { type: "star", icon: "⭐", name: "25 звезд", price: 25, chance: 1 }
                 ]
             },
             normal: {
                 name: "Нормалик",
                 price: 50,
+                color: "#fa709a",
                 items: [
-                    { icon: "🧸", name: "Мишка", price: 15, chance: 50 },
-                    { icon: "🎂", name: "Тортик", price: 50, chance: 40 },
-                    { icon: "🚀", name: "Ракета", price: 100, chance: 9.9 },
-                    { icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/BDayCandle-122842.jpg" }
+                    { type: "gift", icon: "🧸", name: "Мишка", price: 15, chance: 50 },
+                    { type: "gift", icon: "🎂", name: "Тортик", price: 50, chance: 35 },
+                    { type: "gift", icon: "🚀", name: "Ракета", price: 100, chance: 14.9 },
+                    { type: "nft", icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1, image: "https://cdn-icons-png.flaticon.com/512/2237/2237288.png" }
                 ]
             },
             rocket: {
                 name: "Ракетка",
                 price: 100,
+                color: "#a8edea",
                 items: [
-                    { icon: "🎂", name: "Тортик", price: 50, chance: 60 },
-                    { icon: "🚀", name: "Ракета", price: 100, chance: 39.9 },
-                    { icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/BDayCandle-122842.jpg" }
+                    { type: "gift", icon: "🎂", name: "Тортик", price: 50, chance: 50 },
+                    { type: "gift", icon: "🚀", name: "Ракета", price: 100, chance: 44.9 },
+                    { type: "nft", icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 5, image: "https://cdn-icons-png.flaticon.com/512/2237/2237288.png" },
+                    { type: "nft", icon: "🖼", name: "NFT Rocket", price: 500, chance: 0.1, image: "https://cdn-icons-png.flaticon.com/512/824/824100.png" }
                 ]
             },
             world: {
                 name: "Мир",
                 price: 500,
+                color: "#d299c2",
                 items: [
-                    { icon: "🖼", name: "NFT Moon", price: 300, chance: 40, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-moon.jpg" },
-                    { icon: "🖼", name: "NFT Star", price: 400, chance: 30, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-star.jpg" },
-                    { icon: "🖼", name: "NFT Galaxy", price: 500, chance: 20, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-galaxy.jpg" },
-                    { icon: "🖼", name: "NFT Universe", price: 600, chance: 8, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-universe.jpg" },
-                    { icon: "🖼", name: "NFT Infinity", price: 800, chance: 2, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-infinity.jpg" }
+                    { type: "nft", icon: "🖼", name: "NFT Moon", price: 300, chance: 40, image: "https://cdn-icons-png.flaticon.com/512/523/523110.png" },
+                    { type: "nft", icon: "🖼", name: "NFT Star", price: 400, chance: 30, image: "https://cdn-icons-png.flaticon.com/512/2582/2582637.png" },
+                    { type: "nft", icon: "🖼", name: "NFT Galaxy", price: 500, chance: 20, image: "https://cdn-icons-png.flaticon.com/512/2909/2909761.png" },
+                    { type: "nft", icon: "🖼", name: "NFT Universe", price: 600, chance: 8, image: "https://cdn-icons-png.flaticon.com/512/2909/2909797.png" },
+                    { type: "nft", icon: "🖼", name: "NFT Infinity", price: 800, chance: 2, image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }
                 ]
             }
         };
@@ -873,6 +954,10 @@
         const userNameElement = document.getElementById('user-name');
         const userAvatarElement = document.getElementById('user-avatar');
         const userIdElement = document.getElementById('user-id');
+        const statsCasesElement = document.getElementById('stats-cases');
+        const statsStarsElement = document.getElementById('stats-stars');
+        const statsNftElement = document.getElementById('stats-nft');
+        const lastWinsElement = document.getElementById('last-wins');
         const sections = document.querySelectorAll('.section');
         const tabs = document.querySelectorAll('.tab, .footer-tab');
         const dropModal = document.getElementById('drop-modal');
@@ -880,31 +965,105 @@
         const closeDropModal = document.getElementById('close-drop-modal');
         const closeOpenModal = document.getElementById('close-open-modal');
         const dropContent = document.getElementById('drop-content');
+        const dropTitle = document.getElementById('drop-title');
         const openContent = document.getElementById('open-content');
         const itemsWheel = document.getElementById('items-wheel');
         const spinBtn = document.getElementById('spin-btn');
         const resultContent = document.getElementById('result-content');
         const openModalTitle = document.getElementById('open-modal-title');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        const depositBtn = document.getElementById('deposit-btn');
         
         // Initialize user data
         function initUserData() {
             if (user) {
-                userNameElement.textContent = user.username || `Пользователь ${user.id}`;
+                userNameElement.textContent = user.username || `${user.first_name || ''} ${user.last_name || ''}`.trim() || `Пользователь ${user.id}`;
                 userIdElement.textContent = `ID: ${user.id}`;
                 
-                if (user.photo_url) {
-                    userAvatarElement.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
-                }
+                // Load stats from localStorage
+                const savedBalance = localStorage.getItem('caseBalance');
+                const savedOpenedCases = localStorage.getItem('openedCases');
+                const savedTotalStars = localStorage.getItem('totalStarsWon');
+                const savedNftCount = localStorage.getItem('nftCount');
+                const savedLastWins = localStorage.getItem('lastWins');
                 
-                // Simulate loading user balance from server
-                balance = Math.floor(Math.random() * 500) + 50;
+                if (savedBalance) balance = parseInt(savedBalance);
+                if (savedOpenedCases) openedCases = parseInt(savedOpenedCases);
+                if (savedTotalStars) totalStarsWon = parseInt(savedTotalStars);
+                if (savedNftCount) nftCount = parseInt(savedNftCount);
+                if (savedLastWins) lastWins = JSON.parse(savedLastWins);
+                
                 updateBalance();
+                updateStats();
+                updateLastWins();
+                
+                // Simulate avatar
+                const avatarColors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
+                const color = avatarColors[user.id % avatarColors.length];
+                userAvatarElement.style.background = `linear-gradient(135deg, ${color} 0%, ${color}80 100%)`;
+                userAvatarElement.innerHTML = `<i class="fas fa-user" style="color: white;"></i>`;
             }
         }
         
         // Update balance display
         function updateBalance() {
             balanceElement.textContent = balance;
+            localStorage.setItem('caseBalance', balance.toString());
+        }
+        
+        // Update stats display
+        function updateStats() {
+            statsCasesElement.textContent = openedCases;
+            statsStarsElement.textContent = totalStarsWon;
+            statsNftElement.textContent = nftCount;
+            
+            localStorage.setItem('openedCases', openedCases.toString());
+            localStorage.setItem('totalStarsWon', totalStarsWon.toString());
+            localStorage.setItem('nftCount', nftCount.toString());
+        }
+        
+        // Update last wins display
+        function updateLastWins() {
+            lastWinsElement.innerHTML = '';
+            
+            const displayWins = lastWins.slice(-4).reverse();
+            
+            if (displayWins.length === 0) {
+                lastWinsElement.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; opacity: 0.7;">Пока нет выигрышей</div>';
+                return;
+            }
+            
+            displayWins.forEach(win => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <div class="item-icon">${win.icon}</div>
+                    <div class="item-name">${win.name}</div>
+                    <div class="item-price">${win.price} ⭐</div>
+                `;
+                lastWinsElement.appendChild(itemCard);
+            });
+            
+            localStorage.setItem('lastWins', JSON.stringify(lastWins));
+        }
+        
+        // Add win to history
+        function addWinToHistory(item) {
+            lastWins.push({
+                icon: item.icon,
+                name: item.name,
+                price: item.price,
+                type: item.type,
+                timestamp: Date.now()
+            });
+            
+            // Keep only last 10 wins
+            if (lastWins.length > 10) {
+                lastWins = lastWins.slice(-10);
+            }
+            
+            updateLastWins();
         }
         
         // Switch tabs
@@ -928,148 +1087,209 @@
             });
         }
         
+        // Show notification
+        function showNotification(message, duration = 3000) {
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+        
         // Show drop modal
         function showDropModal(caseType) {
             const caseData = casesData[caseType];
+            dropTitle.textContent = `🎁 ${caseData.name}`;
+            
+            let itemsHTML = '';
+            caseData.items.forEach(item => {
+                itemsHTML += `
+                    <div class="item-card">
+                        ${item.image ? `<img src="${item.image}" class="nft-image" alt="${item.name}">` : `<div class="item-icon">${item.icon}</div>`}
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${item.price} ⭐</div>
+                        <div class="item-chance">${item.chance}%</div>
+                    </div>
+                `;
+            });
+            
             dropContent.innerHTML = `
-                <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--tg-theme-link-color);">${caseData.name}</h3>
-                <p style="margin-bottom: 20px; opacity: 0.8;">В этом кейсе вы можете выиграть:</p>
+                <p style="margin-bottom: 20px; opacity: 0.8;">Содержимое кейса:</p>
                 <div class="items-grid">
-                    ${caseData.items.map(item => `
-                        <div class="item-card">
-                            <div class="item-icon">${item.icon}</div>
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-price">${item.price} ⭐</div>
-                            <div class="item-chance">${item.chance}%</div>
-                        </div>
-                    `).join('')}
+                    ${itemsHTML}
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Цена кейса:</span>
+                        <span style="color: gold; font-weight: 600;"><i class="fas fa-star"></i> ${caseData.price}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Ваш баланс:</span>
+                        <span style="color: gold; font-weight: 600;"><i class="fas fa-star"></i> ${balance}</span>
+                    </div>
                 </div>
             `;
             dropModal.classList.add('active');
         }
         
         // Show open modal
+        let currentCaseType = null;
+        let isSpinning = false;
+        
         function showOpenModal(caseType) {
             const caseData = casesData[caseType];
-            openModalTitle.textContent = `Открытие: ${caseData.name}`;
+            currentCaseType = caseType;
             
             // Check if user has enough balance
-            if (balance < caseData.price && caseType !== 'free') {
-                alert(`Недостаточно звезд! Нужно: ${caseData.price} ⭐`);
+            if (balance < caseData.price) {
+                showNotification(`Недостаточно звёзд! Нужно: ${caseData.price} ⭐`);
                 return;
             }
             
-            // Prepare wheel items (repeat items for smooth animation)
+            openModalTitle.textContent = `Открытие: ${caseData.name}`;
+            
+            // Prepare wheel items
             itemsWheel.innerHTML = '';
-            for (let i = 0; i < 30; i++) {
-                const item = caseData.items[Math.floor(Math.random() * caseData.items.length)];
-                itemsWheel.innerHTML += `
-                    <div class="wheel-item" data-price="${item.price}" data-name="${item.name}" data-icon="${item.icon}">
-                        <div style="font-size: 48px; margin-bottom: 10px;">${item.icon}</div>
-                        <div style="font-size: 12px; text-align: center;">${item.name}</div>
-                    </div>
-                `;
+            const itemsToShow = [];
+            
+            // Generate more items for smooth animation
+            for (let i = 0; i < 50; i++) {
+                const randomItem = caseData.items[Math.floor(Math.random() * caseData.items.length)];
+                itemsToShow.push(randomItem);
             }
+            
+            itemsToShow.forEach((item, index) => {
+                const wheelItem = document.createElement('div');
+                wheelItem.className = 'wheel-item';
+                wheelItem.dataset.index = index;
+                wheelItem.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 10px;">${item.icon}</div>
+                    <div style="font-size: 11px; text-align: center;">${item.name}</div>
+                `;
+                itemsWheel.appendChild(wheelItem);
+            });
             
             // Reset UI
             resultContent.style.display = 'none';
             itemsWheel.style.display = 'flex';
+            itemsWheel.style.transform = 'translateX(0)';
             spinBtn.style.display = 'block';
             spinBtn.disabled = false;
             spinBtn.textContent = 'Крутить!';
             
-            // Deduct price if not free
-            if (caseType !== 'free') {
-                balance -= caseData.price;
-                updateBalance();
-            }
-            
             openModal.classList.add('active');
-            currentCase = caseType;
         }
         
         // Spin the wheel
-        let isSpinning = false;
-        let currentCase = null;
-        
-        spinBtn.addEventListener('click', () => {
-            if (isSpinning) return;
+        function spinWheel() {
+            if (isSpinning || !currentCaseType) return;
+            
+            const caseData = casesData[currentCaseType];
+            
+            // Deduct price
+            balance -= caseData.price;
+            openedCases++;
+            updateBalance();
+            updateStats();
             
             isSpinning = true;
             spinBtn.disabled = true;
-            spinBtn.textContent = 'Крутится...';
+            spinBtn.innerHTML = '<div class="loading"></div>';
             
-            const caseData = casesData[currentCase];
-            const items = caseData.items;
+            // Calculate winning item based on chance
+            const totalChance = caseData.items.reduce((sum, item) => sum + item.chance, 0);
+            let random = Math.random() * totalChance;
+            let winningItem = caseData.items[0];
             
-            // Calculate weighted random item
-            const totalWeight = items.reduce((sum, item) => sum + item.chance, 0);
-            let random = Math.random() * totalWeight;
-            let selectedItem = items[0];
-            
-            for (const item of items) {
+            for (const item of caseData.items) {
                 random -= item.chance;
                 if (random <= 0) {
-                    selectedItem = item;
+                    winningItem = item;
                     break;
                 }
             }
             
+            // Add to balance
+            balance += winningItem.price;
+            totalStarsWon += winningItem.price;
+            if (winningItem.type === 'nft') nftCount++;
+            
+            // Add to history
+            addWinToHistory(winningItem);
+            
+            updateBalance();
+            updateStats();
+            
             // Animate wheel
             const wheel = itemsWheel;
-            const itemWidth = 122; // width + margin
-            const spinDuration = 3000; // 3 seconds
+            const itemWidth = 122;
+            const spinDuration = 3000;
             const startTime = Date.now();
-            let startPosition = 0;
-            const selectedIndex = Math.floor(Math.random() * 15) + 10; // Random position in the middle
+            const startPosition = 0;
+            const selectedIndex = 25 + Math.floor(Math.random() * 10); // Stop in the middle
             const targetPosition = -(selectedIndex * itemWidth);
             
             function animate() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / spinDuration, 1);
                 
-                // Easing function (ease-out)
+                // Easing function (ease-out-cubic)
                 const easeOut = 1 - Math.pow(1 - progress, 3);
                 const currentPosition = startPosition + (targetPosition - startPosition) * easeOut;
                 
                 wheel.style.transform = `translateX(${currentPosition}px)`;
+                
+                // Highlight the "winning" item near the end
+                if (progress > 0.9) {
+                    const items = wheel.querySelectorAll('.wheel-item');
+                    const winningIndex = selectedIndex % items.length;
+                    items.forEach((item, idx) => {
+                        if (idx === winningIndex) {
+                            item.classList.add('highlight');
+                        } else {
+                            item.classList.remove('highlight');
+                        }
+                    });
+                }
                 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
                     // Animation complete
                     setTimeout(() => {
-                        showResult(selectedItem);
-                    }, 500);
+                        showResult(winningItem);
+                    }, 1000);
                 }
             }
             
             requestAnimationFrame(animate);
-        });
+        }
         
         // Show result
         function showResult(item) {
             itemsWheel.style.display = 'none';
             spinBtn.style.display = 'none';
             
-            // Add winnings to balance
-            balance += item.price;
-            updateBalance();
-            
             resultContent.style.display = 'block';
             resultContent.innerHTML = `
                 <div class="result-card">
                     <div class="result-icon">${item.icon}</div>
                     <div class="result-name">${item.name}</div>
-                    <div class="result-price">+${item.price} ⭐</div>
+                    <div class="result-price">
+                        <i class="fas fa-star"></i> ${item.price} ⭐
+                    </div>
                     <p style="margin-top: 20px; opacity: 0.8;">Поздравляем! Вы выиграли ${item.name}!</p>
-                    <button class="spin-button" onclick="closeOpenModal()" style="margin-top: 20px; background: var(--tg-theme-button-color);">
+                    <button class="spin-button" onclick="closeOpenModal()" style="margin-top: 20px; background: var(--tg-theme-button-color); color: white;">
                         Отлично!
                     </button>
                 </div>
             `;
             
             isSpinning = false;
+            
+            // Show notification
+            showNotification(`🎉 Вы выиграли ${item.name} за ${item.price} звёзд!`, 4000);
         }
         
         // Close modals
@@ -1080,9 +1300,10 @@
         function closeOpenModal() {
             openModal.classList.remove('active');
             isSpinning = false;
+            currentCaseType = null;
         }
         
-        // Event Listeners
+        // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
             initUserData();
             
@@ -1093,21 +1314,29 @@
                 });
             });
             
-            // Case buttons
-            document.querySelectorAll('.view-drop-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const caseCard = e.target.closest('.case-card');
-                    const caseType = caseCard.dataset.case;
+            // Case buttons - using event delegation
+            document.addEventListener('click', (e) => {
+                // View drop buttons
+                if (e.target.classList.contains('view-drop-btn') || e.target.closest('.view-drop-btn')) {
+                    const btn = e.target.classList.contains('view-drop-btn') ? e.target : e.target.closest('.view-drop-btn');
+                    const caseType = btn.dataset.case;
                     showDropModal(caseType);
-                });
+                }
+                
+                // Open case buttons
+                if (e.target.classList.contains('open-btn') || e.target.closest('.open-btn')) {
+                    const btn = e.target.classList.contains('open-btn') ? e.target : e.target.closest('.open-btn');
+                    const caseType = btn.dataset.case;
+                    showOpenModal(caseType);
+                }
             });
             
-            document.querySelectorAll('.open-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const caseCard = e.target.closest('.case-card');
-                    const caseType = caseCard.dataset.case;
-                    showOpenModal(caseType);
-                });
+            // Spin button
+            spinBtn.addEventListener('click', spinWheel);
+            
+            // Deposit button
+            depositBtn.addEventListener('click', () => {
+                showNotification('Раздел депозита скоро будет доступен!');
             });
             
             // Modal close buttons
@@ -1123,40 +1352,49 @@
                 if (e.target === openModal) closeOpenModal();
             });
             
-            // Simulate Telegram events
-            if (!window.Telegram) {
-                console.log('Running outside Telegram, using mock data');
-                // Mock Telegram object for testing outside Telegram
-                window.Telegram = {
-                    WebApp: {
-                        initDataUnsafe: {
-                            user: {
-                                id: 123456789,
-                                username: 'telegram_user',
-                                first_name: 'Telegram',
-                                last_name: 'User'
-                            }
-                        },
-                        expand: () => console.log('App expanded'),
-                        ready: () => console.log('App ready'),
-                        showAlert: (msg) => alert(msg)
-                    }
-                };
-                initUserData();
+            // Close modal on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeDropModalFunc();
+                    closeOpenModal();
+                }
+            });
+            
+            // Add some sample last wins if empty
+            if (lastWins.length === 0) {
+                lastWins = [
+                    { icon: "⭐", name: "10 звезд", price: 10, type: "star" },
+                    { icon: "🧸", name: "Мишка", price: 15, type: "gift" },
+                    { icon: "🎂", name: "Тортик", price: 50, type: "gift" }
+                ];
+                updateLastWins();
             }
+            
+            // Add hover effects to case cards
+            const caseCards = document.querySelectorAll('.case-card');
+            caseCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    card.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.1) 0%, var(--tg-theme-secondary-bg-color) 100%)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.background = '';
+                });
+            });
         });
         
-        // Add some visual effects
-        document.addEventListener('mousemove', (e) => {
-            const cards = document.querySelectorAll('.case-card');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            });
+        // Handle mobile touch events better
+        document.addEventListener('touchstart', () => {}, { passive: true });
+        
+        // Prevent context menu on buttons
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                e.preventDefault();
+            }
         });
     </script>
 </body>
