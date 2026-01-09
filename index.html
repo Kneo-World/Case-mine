@@ -18,7 +18,6 @@
             --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --gold-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
             --star-gradient: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
-            --nft-gradient: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
             --case-1: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             --case-2: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
             --case-3: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
@@ -345,6 +344,8 @@
             font-size: 48px;
             border: 5px solid white;
             overflow: hidden;
+            background-size: cover;
+            background-position: center;
         }
 
         .profile-avatar img {
@@ -466,7 +467,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Opening Animation */
+        /* Opening Animation - СТРЕЛОЧКА ДОБАВЛЕНА */
         .opening-container {
             height: 200px;
             overflow: hidden;
@@ -474,6 +475,31 @@
             margin: 20px 0;
             border-radius: 12px;
             background: rgba(0, 0, 0, 0.3);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid gold;
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+        }
+
+        .wheel-pointer::after {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: -5px;
+            width: 10px;
+            height: 30px;
+            background: gold;
+            border-radius: 5px;
         }
 
         .items-wheel {
@@ -496,12 +522,27 @@
             border-radius: 10px;
             border: 2px solid transparent;
             transition: all 0.3s ease;
+            position: relative;
         }
 
-        .wheel-item.highlight {
+        .wheel-item.winner {
             border-color: gold;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
             transform: scale(1.05);
+            z-index: 5;
+        }
+
+        .wheel-item.winner::before {
+            content: '🎉';
+            position: absolute;
+            top: -15px;
+            font-size: 24px;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
         }
 
         .result-card {
@@ -696,6 +737,20 @@
             font-size: 12px;
             opacity: 0.8;
         }
+
+        /* Win highlight */
+        .win-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -803,8 +858,8 @@
                 <div class="profile-avatar" id="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <div class="profile-name" id="user-name">Гость</div>
-                <div class="profile-id" id="user-id">ID: 000000</div>
+                <div class="profile-name" id="user-name">Загрузка...</div>
+                <div class="profile-id" id="user-id">ID: загрузка...</div>
                 
                 <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: var(--radius); margin-top: 20px;">
                     <h3 style="margin-bottom: 15px; font-size: 18px;">📊 Статистика</h3>
@@ -845,7 +900,7 @@
         </div>
     </div>
 
-    <!-- Modal for opening case -->
+    <!-- Modal for opening case - СТРЕЛОЧКА ДОБАВЛЕНА -->
     <div class="modal-overlay" id="open-modal">
         <div class="modal">
             <div class="modal-header">
@@ -854,6 +909,8 @@
             </div>
             <div id="open-content">
                 <div class="opening-container">
+                    <!-- Стрелочка-указатель -->
+                    <div class="wheel-pointer"></div>
                     <div class="items-wheel" id="items-wheel">
                         <!-- Will be filled by JavaScript -->
                     </div>
@@ -892,25 +949,34 @@
         // MAIN APPLICATION CODE
         // ============================================
         
-        // Telegram Web App initialization
-        const tg = window.Telegram?.WebApp || {
-            expand: () => console.log('App expanded'),
-            ready: () => console.log('App ready'),
-            initDataUnsafe: { user: null },
-            showAlert: (msg) => { alert(msg); return Promise.resolve(true); }
-        };
+        // Telegram Web App initialization - ИСПРАВЛЕНО ДЛЯ ПРОФИЛЯ
+        let tg = window.Telegram?.WebApp;
+        
+        // Если открыто не в Telegram, создаём заглушку с реальными данными
+        if (!tg) {
+            console.log('Not in Telegram, using mock data');
+            tg = {
+                expand: () => console.log('App expanded'),
+                ready: () => console.log('App ready'),
+                initDataUnsafe: { 
+                    user: {
+                        id: 123456789,
+                        username: 'telegram_user',
+                        first_name: 'Иван',
+                        last_name: 'Иванов',
+                        photo_url: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
+                    } 
+                },
+                showAlert: (msg) => { alert(msg); return Promise.resolve(true); }
+            };
+        }
         
         // Initialize Telegram
         tg.expand();
         tg.ready();
         
-        // User data
-        const user = tg.initDataUnsafe?.user || {
-            id: Math.floor(Math.random() * 1000000),
-            username: 'telegram_user',
-            first_name: 'Telegram',
-            last_name: 'User'
-        };
+        // User data - БЕРЁМ РЕАЛЬНЫЕ ДАННЫЕ ИЗ TELEGRAM
+        const user = tg.initDataUnsafe?.user;
         
         // Application state
         let appState = {
@@ -920,7 +986,8 @@
             nftCount: 0,
             lastWins: [],
             currentCaseType: null,
-            isSpinning: false
+            isSpinning: false,
+            selectedItem: null
         };
         
         // Cases configuration
@@ -1073,6 +1140,43 @@
                     }
                 }
                 return items[0];
+            },
+            
+            // ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ПРОФИЛЯ TELEGRAM
+            initUserProfile: function() {
+                if (!user) {
+                    elements.userName.textContent = 'Гость';
+                    elements.userId.textContent = 'ID: не указан';
+                    elements.userAvatar.innerHTML = '<i class="fas fa-user"></i>';
+                    return;
+                }
+                
+                // Имя пользователя
+                let displayName = 'Пользователь';
+                if (user.username) {
+                    displayName = '@' + user.username;
+                } else if (user.first_name || user.last_name) {
+                    displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                }
+                elements.userName.textContent = displayName;
+                
+                // ID пользователя
+                elements.userId.textContent = `ID: ${user.id || 'не указан'}`;
+                
+                // Аватарка
+                if (user.photo_url) {
+                    elements.userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fas fa-user\"></i>';">`;
+                    elements.userAvatar.style.backgroundImage = `url(${user.photo_url})`;
+                } else {
+                    // Градиент на основе ID
+                    const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
+                    const colorIndex = user.id ? user.id % colors.length : 0;
+                    const color = colors[colorIndex];
+                    elements.userAvatar.style.background = `linear-gradient(135deg, ${color} 0%, ${color}80 100%)`;
+                    elements.userAvatar.innerHTML = '<i class="fas fa-user"></i>';
+                }
+                
+                console.log('User profile loaded:', user);
             }
         };
         
@@ -1143,6 +1247,7 @@
                     const wheelItem = document.createElement('div');
                     wheelItem.className = 'wheel-item';
                     wheelItem.dataset.index = index;
+                    wheelItem.dataset.item = JSON.stringify(item);
                     wheelItem.innerHTML = `
                         <div style="font-size: 48px; margin-bottom: 10px;">${item.icon}</div>
                         <div style="font-size: 11px; text-align: center;">${item.name}</div>
@@ -1173,6 +1278,7 @@
                 elements.openModal.classList.remove('active');
                 appState.isSpinning = false;
                 appState.currentCaseType = null;
+                appState.selectedItem = null;
             },
             
             spinWheel: function() {
@@ -1183,33 +1289,56 @@
                 elements.spinBtn.innerHTML = '<div class="loading"></div>';
                 
                 const caseData = casesConfig[appState.currentCaseType];
-                const winningItem = utils.getRandomItem(caseData.items);
+                appState.selectedItem = utils.getRandomItem(caseData.items);
                 
                 // Animate wheel
                 const wheel = elements.itemsWheel;
                 const itemWidth = 122;
                 const spinDuration = 3000;
                 const startTime = Date.now();
+                
+                // Выбираем позицию так, чтобы выигрышный элемент оказался под стрелкой
+                const items = Array.from(wheel.querySelectorAll('.wheel-item'));
                 const selectedIndex = 25 + Math.floor(Math.random() * 10);
                 const targetPosition = -(selectedIndex * itemWidth);
+                
+                // Находим элемент, который окажется под стрелкой
+                const centerIndex = Math.abs(Math.floor(targetPosition / itemWidth) % items.length);
+                
+                // Заменяем центральный элемент на выигрышный (для демонстрации)
+                setTimeout(() => {
+                    const centerItem = items[centerIndex];
+                    if (centerItem) {
+                        centerItem.innerHTML = `
+                            <div style="font-size: 48px; margin-bottom: 10px;">${appState.selectedItem.icon}</div>
+                            <div style="font-size: 11px; text-align: center;">${appState.selectedItem.name}</div>
+                        `;
+                        centerItem.dataset.item = JSON.stringify(appState.selectedItem);
+                    }
+                }, spinDuration - 500);
                 
                 function animate() {
                     const elapsed = Date.now() - startTime;
                     const progress = Math.min(elapsed / spinDuration, 1);
-                    const easeOut = 1 - Math.pow(1 - progress, 3);
-                    const currentPosition = targetPosition * easeOut;
                     
+                    // Сначала быстро, потом медленно
+                    let easeOut;
+                    if (progress < 0.7) {
+                        easeOut = progress / 0.7;
+                    } else {
+                        easeOut = 0.7 + (progress - 0.7) * 0.3;
+                    }
+                    
+                    const currentPosition = targetPosition * easeOut;
                     wheel.style.transform = `translateX(${currentPosition}px)`;
                     
-                    // Highlight winning item
-                    if (progress > 0.9) {
-                        const items = wheel.querySelectorAll('.wheel-item');
-                        const winningIndex = selectedIndex % items.length;
+                    // Подсвечиваем выигрышный элемент в конце
+                    if (progress > 0.95) {
                         items.forEach((item, idx) => {
-                            if (idx === winningIndex) {
-                                item.classList.add('highlight');
+                            if (idx === centerIndex) {
+                                item.classList.add('winner');
                             } else {
-                                item.classList.remove('highlight');
+                                item.classList.remove('winner');
                             }
                         });
                     }
@@ -1218,8 +1347,8 @@
                         requestAnimationFrame(animate);
                     } else {
                         setTimeout(() => {
-                            modal.showResult(winningItem);
-                        }, 1000);
+                            modal.showResult(appState.selectedItem);
+                        }, 1500);
                     }
                 }
                 
@@ -1303,16 +1432,8 @@
                 // Load saved state
                 utils.loadState();
                 
-                // Initialize user data
-                elements.userName.textContent = user.username || 
-                    `${user.first_name || ''} ${user.last_name || ''}`.trim() || 
-                    `User ${user.id}`;
-                elements.userId.textContent = `ID: ${user.id}`;
-                
-                // Set random avatar color
-                const avatarColors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
-                const color = avatarColors[user.id % avatarColors.length];
-                elements.userAvatar.style.background = `linear-gradient(135deg, ${color} 0%, ${color}80 100%)`;
+                // Initialize user profile from Telegram
+                utils.initUserProfile();
                 
                 // Update UI
                 utils.updateUI();
