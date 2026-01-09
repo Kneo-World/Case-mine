@@ -11,10 +11,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
         :root {
-            --tg-theme-bg-color: #0f1218;
+            --tg-theme-bg-color: #0d1017;
             --accent-blue: #007aff;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
         body {
@@ -28,91 +28,69 @@
 
         .glass {
             background: var(--glass);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
         }
 
-        /* Snow Animation */
+        /* Snow Particles */
         .snow-container {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             pointer-events: none;
             z-index: 0;
         }
-
         .snowflake {
             position: absolute;
             background: white;
             border-radius: 50%;
-            opacity: 0.3;
+            opacity: 0.2;
             animation: fall linear infinite;
         }
+        @keyframes fall { to { transform: translateY(100vh); } }
 
-        @keyframes fall {
-            to { transform: translateY(100vh); }
-        }
-
-        /* Roulette Styling */
+        /* Roulette */
         .roulette-wrapper {
             position: relative;
             width: 100%;
-            height: 120px;
+            height: 130px;
             overflow: hidden;
-            border-radius: 15px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             border: 1px solid var(--glass-border);
+            border-radius: 15px;
         }
-
         .roulette-container {
             display: flex;
             position: absolute;
             left: 0;
             transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
         }
-
         .roulette-item {
-            min-width: 100px;
-            height: 120px;
+            min-width: 110px;
+            height: 130px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             border-right: 1px solid rgba(255,255,255,0.05);
         }
-
         .roulette-pointer {
             position: absolute;
             top: 0; left: 50%;
             transform: translateX(-50%);
-            width: 2px; height: 100%;
+            width: 3px; height: 100%;
             background: var(--accent-blue);
             z-index: 10;
             box-shadow: 0 0 15px var(--accent-blue);
         }
 
-        .premium-border {
-            border: 2px solid #facc15;
-            box-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
-        }
-
-        .nav-active {
-            color: var(--accent-blue);
-        }
-
-        .page {
-            display: none;
-            height: calc(100vh - 80px);
-            overflow-y: auto;
-            padding: 20px;
-            padding-top: 10px;
-            z-index: 1;
-            position: relative;
-        }
-
+        /* Layout */
+        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; z-index: 1; position: relative; }
         .page.active { display: block; }
-
-        /* Hide Scrollbar */
+        .nav-active { color: var(--accent-blue); opacity: 1 !important; }
+        .premium-border { border: 2px solid #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.2); }
+        
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -121,142 +99,132 @@
     <div class="snow-container" id="snow"></div>
 
     <header class="flex justify-between items-center p-4 z-10 relative">
-        <div class="flex items-center gap-2 glass px-3 py-1">
-            <span class="text-yellow-400 text-sm">⭐</span>
-            <span id="header-balance" class="font-bold text-sm">0.00</span>
-            <button class="bg-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs ml-1">+</button>
+        <div class="flex items-center gap-2 glass px-4 py-2">
+            <span class="text-yellow-400">⭐</span>
+            <span id="header-balance" class="font-bold">0.00</span>
         </div>
-        <div id="user-avatar" class="w-8 h-8 rounded-full border border-blue-500 overflow-hidden">
-            <img src="https://via.placeholder.com/32" alt="pfp" id="pfp-img">
+        <div class="w-10 h-10 rounded-full border border-blue-500 overflow-hidden glass" id="user-avatar">
+            <img src="https://via.placeholder.com/40" id="pfp-img" class="w-full h-full object-cover">
         </div>
     </header>
 
     <main>
         <section id="page-cases" class="page active">
-            <h2 class="text-2xl font-bold mb-4">Cases</h2>
-            <div class="grid grid-cols-2 gap-4" id="cases-grid">
-                </div>
+            <h2 class="text-2xl font-bold mb-5">Open Cases</h2>
+            <div class="grid grid-cols-2 gap-4" id="cases-grid"></div>
         </section>
 
         <section id="page-deposit" class="page">
             <div class="flex flex-col items-center justify-center h-full text-center">
-                <i data-lucide="construction" class="w-16 h-16 text-yellow-500 mb-4"></i>
-                <h2 class="text-xl font-bold">Market</h2>
-                <p class="text-gray-400 mt-2 px-10">Deposits and Stars Market are coming in the next update.</p>
-                <div class="mt-6 glass p-6 w-full max-w-xs">
-                    <p class="text-sm opacity-50">Current Rate</p>
-                    <p class="text-lg font-bold">1 USD = 50 ⭐</p>
+                <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="wallet" class="w-10 h-10 text-blue-500"></i>
                 </div>
+                <h2 class="text-xl font-bold">Stars Deposit</h2>
+                <p class="text-gray-400 mt-2 px-10 text-sm">Transfer Stars via Telegram Bot to top up your balance.</p>
+                <button class="mt-6 bg-blue-600 px-8 py-3 rounded-xl font-bold opacity-50 cursor-not-allowed">Coming Soon</button>
             </div>
         </section>
 
         <section id="page-profile" class="page">
-            <div class="glass p-6 mb-6 flex items-center gap-4">
-                <img src="" id="profile-pfp" class="w-16 h-16 rounded-2xl border-2 border-blue-500">
+            <div class="glass p-5 mb-6 flex items-center gap-4 border-l-4 border-blue-500">
+                <img src="" id="profile-pfp" class="w-14 h-14 rounded-xl">
                 <div>
-                    <h3 id="profile-name" class="text-xl font-bold">User</h3>
-                    <p class="text-sm text-blue-400">Collector Rank</p>
+                    <h3 id="profile-name" class="text-lg font-bold">Player</h3>
+                    <p id="stats-summary" class="text-[10px] text-blue-400 font-bold uppercase">0 Cases Opened</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="glass p-4 text-center">
-                    <p class="text-xs opacity-50 uppercase">Opened</p>
-                    <p id="stats-opened" class="text-xl font-bold">0</p>
-                </div>
-                <div class="glass p-4 text-center">
-                    <p class="text-xs opacity-50 uppercase">Inventory</p>
-                    <p id="stats-inv" class="text-xl font-bold">0</p>
-                </div>
-            </div>
-
-            <h3 class="font-bold mb-3 flex items-center gap-2">
-                <i data-lucide="package" class="w-4 h-4"></i> Inventory
+            <h3 class="font-bold mb-4 flex items-center gap-2 px-1 text-sm text-gray-400">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i> YOUR INVENTORY
             </h3>
-            <div id="inventory-grid" class="grid grid-cols-3 gap-2 pb-10">
-                </div>
+            <div id="inventory-grid" class="grid grid-cols-3 gap-3 pb-24"></div>
         </section>
     </main>
 
     <div id="case-modal" class="fixed inset-0 z-50 flex items-end justify-center hidden">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeModal()"></div>
         <div class="glass w-full max-w-md p-6 rounded-t-[30px] z-10 translate-y-full transition-transform duration-300" id="modal-content">
             <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
-            
-            <h2 id="modal-title" class="text-2xl font-bold text-center mb-2">Case Name</h2>
-            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold">50 ⭐</p>
+            <h2 id="modal-title" class="text-2xl font-bold text-center">Case</h2>
+            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold"></p>
 
             <div id="roulette-view" class="hidden">
-                <div class="roulette-wrapper mb-6">
+                <div class="roulette-wrapper mb-8">
                     <div class="roulette-pointer"></div>
                     <div class="roulette-container" id="roulette-strip"></div>
                 </div>
             </div>
 
             <div id="droplist-view">
-                <p class="text-xs opacity-50 uppercase mb-3">Possible Drops</p>
+                <p class="text-[10px] opacity-40 uppercase font-bold mb-4 tracking-widest text-center">Potential Drops</p>
                 <div class="grid grid-cols-4 gap-2 mb-8" id="drop-list-items"></div>
             </div>
 
-            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
+            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/30 active:scale-95 transition-all">
                 Open Case
             </button>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/10 flex justify-around items-center px-4 z-20">
-        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 nav-active">
-            <i data-lucide="box"></i>
-            <span class="text-[10px] font-bold">CASES</span>
+    <div id="item-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-6">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closeItemModal()"></div>
+        <div class="glass w-full max-w-xs p-8 rounded-[30px] z-10 text-center scale-90 transition-transform duration-200" id="item-modal-content">
+            <div id="item-icon-large" class="text-6xl mb-4"></div>
+            <h2 id="item-name-large" class="text-2xl font-bold"></h2>
+            <p id="item-rarity-text" class="text-[10px] font-bold text-blue-400 mb-6 tracking-widest uppercase"></p>
+            <div class="flex flex-col gap-3">
+                <button id="sell-btn" class="w-full bg-green-500/10 border border-green-500/30 text-green-400 py-3 rounded-xl font-bold active:scale-95 transition-all">Sell Item</button>
+                <button onclick="tg.showAlert('Withdrawals are disabled.')" class="w-full bg-white/5 text-white/30 py-3 rounded-xl font-bold">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/5 flex justify-around items-center px-4 z-20">
+        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 opacity-40 transition-all nav-active">
+            <i data-lucide="layout-grid"></i><span class="text-[9px] font-bold">CASES</span>
         </button>
-        <button onclick="showPage('deposit')" id="nav-deposit" class="flex flex-col items-center gap-1 opacity-50">
-            <i data-lucide="arrow-up-circle"></i>
-            <span class="text-[10px] font-bold">DEPOSIT</span>
+        <button onclick="showPage('deposit')" id="nav-deposit" class="flex flex-col items-center gap-1 opacity-40 transition-all">
+            <i data-lucide="plus-circle"></i><span class="text-[9px] font-bold">DEPOSIT</span>
         </button>
-        <button onclick="showPage('profile')" id="nav-profile" class="flex flex-col items-center gap-1 opacity-50">
-            <i data-lucide="user"></i>
-            <span class="text-[10px] font-bold">PROFILE</span>
+        <button onclick="showPage('profile')" id="nav-profile" class="flex flex-col items-center gap-1 opacity-40 transition-all">
+            <i data-lucide="user"></i><span class="text-[9px] font-bold">PROFILE</span>
         </button>
     </nav>
 
     <script>
-        // 1. DATA CONFIGURATION
-        const ITEMS = {
-            STAR_1: { name: '1 Star', emoji: '⭐', value: 1, rarity: 'common' },
-            STAR_5: { name: '5 Stars', emoji: '⭐', value: 5, rarity: 'common' },
-            BEAR: { name: 'Bear Gift', emoji: '🧸', value: 15, rarity: 'rare' },
-            CAKE: { name: 'Cake Gift', emoji: '🎂', value: 50, rarity: 'legendary' },
-            ROCKET: { name: 'Rocket Gift', emoji: '🚀', value: 100, rarity: 'legendary' },
-            CANDLE: { name: 'B-day Candle', emoji: '🕯️', value: 500, rarity: 'nft', nft: true },
-            GOLD_MONKEY: { name: 'Gold Monkey', emoji: '🐒', value: 800, rarity: 'nft', nft: true }
-        };
-
-        const CASES = [
-            { id: 'free', name: 'Free', price: 0, loot: [ITEMS.STAR_1, ITEMS.STAR_1, ITEMS.STAR_1, ITEMS.BEAR, ITEMS.CAKE], color: 'from-green-500' },
-            { id: 'bum', name: 'Bum', price: 25, loot: [ITEMS.STAR_5, ITEMS.STAR_5, ITEMS.BEAR, ITEMS.BEAR, ITEMS.CAKE], color: 'from-orange-500' },
-            { id: 'normal', name: 'Normal', price: 50, loot: [ITEMS.BEAR, ITEMS.BEAR, ITEMS.CAKE, ITEMS.CAKE, ITEMS.ROCKET], color: 'from-blue-500' },
-            { id: 'rocket', name: 'Rocket', price: 100, loot: [ITEMS.CAKE, ITEMS.ROCKET, ITEMS.ROCKET, ITEMS.CANDLE], color: 'from-purple-500' },
-            { id: 'world', name: 'World', price: 500, loot: [ITEMS.CANDLE, ITEMS.GOLD_MONKEY], color: 'from-yellow-500' }
-        ];
-
-        // 2. STATE MANAGEMENT
-        let balance = parseFloat(localStorage.getItem('balance')) || 100.00;
-        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-        let statsOpened = parseInt(localStorage.getItem('statsOpened')) || 0;
-        let activeCase = null;
-        let isSpinning = false;
-
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 3. CORE FUNCTIONS
+        const ITEMS = {
+            S1: { name: '1 Star', emoji: '⭐', value: 1, rarity: 'common' },
+            S5: { name: '5 Stars', emoji: '⭐', value: 5, rarity: 'common' },
+            BEAR: { name: 'Bear Gift', emoji: '🧸', value: 15, rarity: 'rare' },
+            CAKE: { name: 'Cake Gift', emoji: '🎂', value: 50, rarity: 'legendary' },
+            ROCKET: { name: 'Rocket Gift', emoji: '🚀', value: 100, rarity: 'legendary' },
+            CANDLE: { name: 'NFT Candle', emoji: '🕯️', value: 500, rarity: 'mythic', nft: true },
+            MONKEY: { name: 'NFT Monkey', emoji: '🐒', value: 850, rarity: 'mythic', nft: true }
+        };
+
+        const CASES = [
+            { id: 'free', name: 'Free', price: 0, loot: [ITEMS.S1, ITEMS.S1, ITEMS.BEAR, ITEMS.CAKE], color: 'from-green-500/20' },
+            { id: 'bum', name: 'Bum', price: 25, loot: [ITEMS.S5, ITEMS.BEAR, ITEMS.BEAR, ITEMS.CAKE], color: 'from-orange-500/20' },
+            { id: 'normal', name: 'Normal', price: 50, loot: [ITEMS.BEAR, ITEMS.CAKE, ITEMS.CAKE, ITEMS.ROCKET], color: 'from-blue-500/20' },
+            { id: 'rocket', name: 'Rocket', price: 100, loot: [ITEMS.CAKE, ITEMS.ROCKET, ITEMS.ROCKET, ITEMS.CANDLE], color: 'from-purple-500/20' },
+            { id: 'world', name: 'World', price: 500, loot: [ITEMS.CANDLE, ITEMS.MONKEY], color: 'from-yellow-500/20' }
+        ];
+
+        let balance = parseFloat(localStorage.getItem('bal')) || 250.00;
+        let inventory = JSON.parse(localStorage.getItem('inv')) || [];
+        let statsOpened = parseInt(localStorage.getItem('stats')) || 0;
+        let activeCase = null;
+        let spinning = false;
+
         function init() {
             lucide.createIcons();
             createSnow();
             renderCases();
             updateUI();
             
-            // Telegram User Data
             const user = tg.initDataUnsafe?.user;
             if (user) {
                 document.getElementById('profile-name').innerText = user.first_name;
@@ -265,18 +233,16 @@
                     document.getElementById('profile-pfp').src = user.photo_url;
                 }
             }
-
-            showPage('cases');
         }
 
         function createSnow() {
             const container = document.getElementById('snow');
-            for(let i=0; i<30; i++) {
+            for(let i=0; i<40; i++) {
                 const flake = document.createElement('div');
                 flake.className = 'snowflake';
                 flake.style.left = Math.random() * 100 + 'vw';
-                flake.style.width = flake.style.height = Math.random() * 4 + 2 + 'px';
-                flake.style.animationDuration = Math.random() * 3 + 2 + 's';
+                flake.style.width = flake.style.height = Math.random() * 3 + 2 + 'px';
+                flake.style.animationDuration = Math.random() * 3 + 4 + 's';
                 flake.style.animationDelay = Math.random() * 5 + 's';
                 container.appendChild(flake);
             }
@@ -284,97 +250,76 @@
 
         function updateUI() {
             document.getElementById('header-balance').innerText = balance.toFixed(2);
-            document.getElementById('stats-opened').innerText = statsOpened;
-            document.getElementById('stats-inv').innerText = inventory.length;
+            document.getElementById('stats-summary').innerText = `${statsOpened} Cases Opened`;
             
-            const invGrid = document.getElementById('inventory-grid');
-            invGrid.innerHTML = '';
-            inventory.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `glass p-2 flex flex-col items-center justify-center aspect-square text-center ${item.nft ? 'premium-border' : ''}`;
-                div.innerHTML = `<span class="text-2xl mb-1">${item.emoji}</span><span class="text-[8px] opacity-70 truncate w-full">${item.name}</span>`;
-                invGrid.appendChild(div);
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+            inventory.forEach((item, idx) => {
+                const el = document.createElement('div');
+                el.className = `glass p-3 flex flex-col items-center justify-center aspect-square text-center ${item.nft ? 'premium-border' : ''}`;
+                el.onclick = () => openItemDetail(item, idx);
+                el.innerHTML = `<span class="text-3xl mb-1">${item.emoji}</span><span class="text-[8px] font-bold opacity-60 truncate w-full">${item.name}</span>`;
+                grid.appendChild(el);
             });
 
-            localStorage.setItem('balance', balance);
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-            localStorage.setItem('statsOpened', statsOpened);
+            localStorage.setItem('bal', balance);
+            localStorage.setItem('inv', JSON.stringify(inventory));
+            localStorage.setItem('stats', statsOpened);
         }
 
         function renderCases() {
             const grid = document.getElementById('cases-grid');
             CASES.forEach(c => {
                 const card = document.createElement('div');
-                card.className = `glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-3 active:scale-95 transition-transform cursor-pointer`;
+                card.className = `glass bg-gradient-to-br ${c.color} p-5 flex flex-col items-center gap-3 active:scale-95 transition-all cursor-pointer`;
                 card.onclick = () => openCaseModal(c);
-                card.innerHTML = `
-                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-3xl shadow-inner">📦</div>
-                    <div class="text-center">
-                        <p class="font-bold">${c.name}</p>
-                        <p class="text-xs text-blue-400 font-bold">${c.price === 0 ? 'FREE' : c.price + ' ⭐'}</p>
-                    </div>
-                `;
+                card.innerHTML = `<div class="text-4xl">📦</div><div><p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-blue-400 font-bold">${c.price} ⭐</p></div>`;
                 grid.appendChild(card);
             });
         }
 
-        // 4. NAVIGATION
-        function showPage(pageId) {
+        function showPage(id) {
+            if(spinning) return;
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            
-            document.querySelectorAll('nav button').forEach(b => b.classList.add('opacity-50'));
-            document.getElementById(`nav-${pageId}`).classList.remove('opacity-50');
-            document.getElementById(`nav-${pageId}`).classList.add('nav-active');
-            
+            document.getElementById(`page-${id}`).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById(`nav-${id}`).classList.add('nav-active');
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // 5. CASE OPENING LOGIC
-        function openCaseModal(caseObj) {
-            activeCase = caseObj;
-            document.getElementById('modal-title').innerText = caseObj.name + " Case";
-            document.getElementById('modal-price').innerText = caseObj.price === 0 ? "Daily Free Claim" : `${caseObj.price} ⭐`;
+        function openCaseModal(c) {
+            activeCase = c;
+            document.getElementById('modal-title').innerText = c.name + " Case";
+            document.getElementById('modal-price').innerText = c.price + " ⭐";
             
-            const dropList = document.getElementById('drop-list-items');
-            dropList.innerHTML = '';
-            caseObj.loot.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "flex flex-col items-center glass p-2 relative";
-                div.innerHTML = `
-                    <span class="text-xs absolute top-1 right-1 opacity-40 font-bold">10%</span>
-                    <span class="text-xl">${item.emoji}</span>
-                `;
-                dropList.appendChild(div);
+            const drops = document.getElementById('drop-list-items');
+            drops.innerHTML = '';
+            c.loot.forEach(item => {
+                drops.innerHTML += `<div class="glass p-2 flex flex-col items-center"><span class="text-xl">${item.emoji}</span></div>`;
             });
 
-            const modal = document.getElementById('case-modal');
-            const content = document.getElementById('modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => content.style.transform = 'translateY(0)', 10);
-            
             document.getElementById('roulette-view').classList.add('hidden');
             document.getElementById('droplist-view').classList.remove('hidden');
             document.getElementById('open-btn').style.display = 'block';
+            
+            const modal = document.getElementById('case-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => document.getElementById('modal-content').style.transform = 'translateY(0)', 10);
         }
 
         function closeModal() {
-            if (isSpinning) return;
-            const content = document.getElementById('modal-content');
-            content.style.transform = 'translateY(100%)';
+            if(spinning) return;
+            document.getElementById('modal-content').style.transform = 'translateY(100%)';
             setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300);
         }
 
         function startOpening() {
-            if (balance < activeCase.price) {
-                tg.showAlert("Not enough Stars!");
-                return;
-            }
-
-            isSpinning = true;
+            if (balance < activeCase.price) return tg.showAlert("Insufficient balance!");
+            
+            spinning = true;
             balance -= activeCase.price;
             updateUI();
-            tg.HapticFeedback.impactOccurred('medium');
+            tg.HapticFeedback.impactOccurred('heavy');
 
             document.getElementById('droplist-view').classList.add('hidden');
             document.getElementById('open-btn').style.display = 'none';
@@ -384,64 +329,55 @@
             strip.style.transition = 'none';
             strip.style.transform = 'translateX(0)';
             
-            // Build the strip (80 items for length)
-            let stripHTML = '';
-            const totalItems = 80;
-            const winningIndex = 75; // The 75th item is the winner
-
-            for(let i=0; i<totalItems; i++) {
-                const randomItem = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)];
-                // If it's the winning slot, we'll store it later, but for now just fill
-                stripHTML += `
-                    <div class="roulette-item">
-                        <span class="text-3xl">${randomItem.emoji}</span>
-                        <span class="text-[10px] opacity-50 mt-1">${randomItem.name}</span>
-                    </div>
-                `;
+            let html = '';
+            for(let i=0; i<60; i++) {
+                const item = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)];
+                html += `<div class="roulette-item"><span class="text-3xl">${item.emoji}</span></div>`;
             }
-            strip.innerHTML = stripHTML;
+            strip.innerHTML = html;
 
-            // Determine Winner
             const winner = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)];
-            const winningSlot = strip.children[winningIndex];
-            winningSlot.innerHTML = `<span class="text-3xl">${winner.emoji}</span><span class="text-[10px] opacity-50 mt-1">${winner.name}</span>`;
-            if(winner.nft) winningSlot.classList.add('premium-border', 'bg-yellow-500/10');
+            const winningIdx = 55;
+            strip.children[winningIdx].innerHTML = `<span class="text-3xl">${winner.emoji}</span>`;
+            if(winner.nft) strip.children[winningIdx].classList.add('premium-border');
 
-            // Animate
             setTimeout(() => {
-                const itemWidth = 100;
-                const containerWidth = document.querySelector('.roulette-wrapper').offsetWidth;
-                const targetX = (winningIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
-                
+                const offset = (winningIdx * 110) - (document.querySelector('.roulette-wrapper').offsetWidth / 2) + 55;
                 strip.style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.15, 1)';
-                strip.style.transform = `translateX(-${targetX}px)`;
+                strip.style.transform = `translateX(-${offset}px)`;
             }, 50);
 
-            // Handle Finish
             setTimeout(() => {
-                tg.HapticFeedback.notificationOccurred('success');
-                inventory.unshift(winner);
+                spinning = false;
                 statsOpened++;
-                
-                if (winner.value && winner.name.includes('Star')) {
-                    balance += winner.value;
-                }
-
+                inventory.unshift(winner);
                 updateUI();
-                isSpinning = false;
-                
-                // Visual feedback
-                winningSlot.classList.add('bg-blue-500/20');
-                
-                setTimeout(() => {
-                    tg.showConfirm(`You won: ${winner.name}!`, (ok) => {
-                        closeModal();
-                    });
-                }, 500);
-            }, 5600);
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showConfirm(`Won ${winner.name}!`, () => closeModal());
+            }, 5500);
         }
 
-        // Initialize on load
+        function openItemDetail(item, idx) {
+            document.getElementById('item-icon-large').innerText = item.emoji;
+            document.getElementById('item-name-large').innerText = item.name;
+            document.getElementById('item-rarity-text').innerText = item.rarity;
+            document.getElementById('sell-btn').innerText = `Sell for ${item.value} ⭐`;
+            document.getElementById('sell-btn').onclick = () => {
+                balance += item.value;
+                inventory.splice(idx, 1);
+                updateUI();
+                closeItemModal();
+                tg.HapticFeedback.notificationOccurred('success');
+            };
+            document.getElementById('item-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('item-modal-content').classList.remove('scale-90'), 10);
+        }
+
+        function closeItemModal() {
+            document.getElementById('item-modal-content').classList.add('scale-90');
+            setTimeout(() => document.getElementById('item-modal').classList.add('hidden'), 200);
+        }
+
         window.onload = init;
     </script>
 </body>
