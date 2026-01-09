@@ -7,19 +7,23 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         :root { --tg-bg: #0f1218; --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
-        body { font-family: 'Inter', sans-serif; background: var(--tg-bg); color: white; margin: 0; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--tg-bg); color: white; margin: 0; overflow-x: hidden; }
         .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
         .snowflake { position: absolute; background: white; border-radius: 50%; opacity: 0.2; pointer-events: none; animation: fall linear infinite; }
         @keyframes fall { to { transform: translateY(100vh); } }
         .roulette-wrapper { position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
-        .roulette-container { display: flex; position: absolute; left: 0; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); }
+        .roulette-container { display: flex; position: absolute; left: 0; }
         .roulette-item { min-width: 100px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.05); }
         .roulette-pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: var(--accent); z-index: 10; box-shadow: 0 0 15px var(--accent); }
         .premium-border { border: 2px solid #facc15 !important; box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); }
-        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; position: relative; z-index: 1; }
+        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; }
         .page.active { display: block; }
         ::-webkit-scrollbar { display: none; }
     </style>
@@ -30,7 +34,7 @@
     <header class="flex justify-between items-center p-4 relative z-10">
         <div class="glass px-3 py-1 flex items-center gap-2">
             <span class="text-yellow-400 text-sm">⭐</span>
-            <span id="header-balance" class="font-bold text-sm">0.00</span>
+            <span id="header-balance" class="font-bold text-sm">0</span>
         </div>
         <div class="w-8 h-8 rounded-full border border-blue-500 overflow-hidden glass" id="pfp-box">
             <img src="" id="user-pfp" class="w-full h-full hidden">
@@ -40,7 +44,7 @@
 
     <main>
         <section id="page-cases" class="page active">
-            <h2 class="text-2xl font-bold mb-4">Магазин</h2>
+            <h2 class="text-2xl font-bold mb-4">Кейсы</h2>
             <div class="grid grid-cols-2 gap-4" id="cases-grid"></div>
         </section>
 
@@ -48,13 +52,13 @@
             <div class="glass p-6 mb-4 flex items-center gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-bold" id="profile-stub">?</div>
                 <div>
-                    <h3 id="profile-name" class="text-xl font-bold">Пользователь</h3>
-                    <p class="text-xs text-blue-400" id="inv-stats">0 предметов</p>
+                    <h3 id="profile-name" class="text-xl font-bold italic">Загрузка...</h3>
+                    <p class="text-[10px] text-blue-400 uppercase font-bold" id="inv-stats">0 предметов</p>
                 </div>
             </div>
             
-            <button onclick="window.location.href='market.html'" class="w-full glass py-4 mb-6 flex items-center justify-center gap-2 font-bold text-sm text-yellow-500 active:scale-95 transition-transform">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i> ПЕРЕЙТИ НА МАРКЕТ
+            <button onclick="window.location.href='market.html'" class="w-full glass py-4 mb-6 flex items-center justify-center gap-2 font-bold text-xs text-yellow-500 active:scale-95 transition-transform uppercase tracking-wider">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i> Перейти на маркет
             </button>
 
             <div id="inventory-grid" class="grid grid-cols-3 gap-2 pb-10"></div>
@@ -67,17 +71,20 @@
             <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
             <h2 id="modal-title" class="text-2xl font-bold text-center mb-1">Кейс</h2>
             <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold"></p>
+            
             <div id="roulette-view" class="hidden">
                 <div class="roulette-wrapper mb-6">
                     <div class="roulette-pointer"></div>
                     <div class="roulette-container" id="roulette-strip"></div>
                 </div>
             </div>
+
             <div id="droplist-view">
-                <p class="text-[10px] opacity-40 uppercase font-bold mb-3 text-center">Содержимое</p>
+                <p class="text-[10px] opacity-40 uppercase font-bold mb-3 text-center">Возможный дроп</p>
                 <div class="grid grid-cols-4 gap-2 mb-8" id="drop-list-items"></div>
             </div>
-            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg active:scale-95 transition-all">Открыть кейс</button>
+
+            <button id="open-btn" onclick="startOpening()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg active:scale-95 transition-all">ОТКРЫТЬ</button>
         </div>
     </div>
 
@@ -90,10 +97,7 @@
         </button>
     </nav>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDnmAysvjn6Zu-pbddOhXDt1ohnZaY1Fcw",
             authDomain: "casemine-online.firebaseapp.com",
@@ -102,10 +106,10 @@
             messagingSenderId: "750443799326",
             appId: "1:750443799326:web:edec309f732337e39a1f0f"
         };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
         const tg = window.Telegram.WebApp;
+
         const SHARED_KEY = 'casemine_inventory';
         const BALANCE_KEY = 'balance';
 
@@ -129,7 +133,7 @@
         let isSpinning = false;
         let activeCase = null;
 
-        window.init = function() {
+        function init() {
             lucide.createIcons();
             renderCases();
             updateUI();
@@ -147,28 +151,32 @@
             tg.expand();
         }
 
-        window.updateUI = function() {
+        function updateUI() {
             document.getElementById('header-balance').innerText = balance.toFixed(0);
-            document.getElementById('inv-stats').innerText = `${inventory.length} предметов в коллекции`;
+            document.getElementById('inv-stats').innerText = `${inventory.length} предметов`;
+            
             const grid = document.getElementById('inventory-grid');
             grid.innerHTML = inventory.map((item, idx) => `
                 <div class="glass p-2 flex flex-col items-center justify-center aspect-square text-center relative ${item.nft ? 'premium-border' : ''}">
                     <span class="text-2xl">${item.emoji}</span>
-                    <span class="text-[8px] opacity-40 truncate w-full mt-1">${item.name}</span>
+                    <span class="text-[7px] opacity-40 truncate w-full mt-1">${item.name}</span>
                     <div class="flex flex-col gap-1 w-full mt-2">
-                        <button onclick="sellForStars(${idx})" class="bg-white/10 text-[6px] font-bold py-1 rounded text-blue-400">ПРОДАТЬ</button>
-                        <button onclick="listToOnlineMarket(${idx})" class="bg-blue-600 text-[6px] font-bold py-1 rounded text-white uppercase">В магазин</button>
+                        <button onclick="sellForStars(${idx})" class="bg-white/10 text-[6px] font-bold py-1 rounded text-blue-400 uppercase">Продать</button>
+                        <button onclick="sendToMarket(${idx})" class="bg-blue-600 text-[6px] font-bold py-1 rounded text-white uppercase">На рынок</button>
                     </div>
                 </div>
             `).join('');
+
             localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
             localStorage.setItem(BALANCE_KEY, balance);
         }
 
-        window.listToOnlineMarket = function(idx) {
+        // --- ЛОГИКА ОТПРАВКИ В MARKET.HTML ЧЕРЕЗ БАЗУ ---
+        function sendToMarket(idx) {
             const item = inventory[idx];
-            const marketRef = ref(db, 'online_market');
-            push(marketRef, {
+            const marketRef = db.ref('online_market'); // Та самая таблица, которую читает market.html
+
+            marketRef.push({
                 name: item.name,
                 emoji: item.emoji,
                 value: item.value,
@@ -177,34 +185,33 @@
             }).then(() => {
                 inventory.splice(idx, 1);
                 updateUI();
-                tg.showAlert("✅ Выставлено!");
+                tg.showAlert("✅ Предмет выставлен на онлайн-рынок!");
             }).catch(e => tg.showAlert("Ошибка: " + e.message));
         }
 
-        window.sellForStars = function(idx) {
-            const item = inventory[idx];
-            balance += item.value;
+        function sellForStars(idx) {
+            balance += inventory[idx].value;
             inventory.splice(idx, 1);
             tg.HapticFeedback.notificationOccurred('success');
             updateUI();
         }
 
-        window.renderCases = function() {
+        function renderCases() {
             const grid = document.getElementById('cases-grid');
-            grid.innerHTML = "";
-            CASES.forEach(c => {
-                const div = document.createElement('div');
-                div.className = `glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-2 active:scale-95 transition-all`;
-                div.onclick = () => openCaseModal(c);
-                div.innerHTML = `<div class="text-4xl">📦</div><p class="font-bold text-sm">${c.name}</p><p class="text-xs text-blue-400 font-bold">${c.price || 'БЕСПЛАТНО'}</p>`;
-                grid.appendChild(div);
-            });
+            grid.innerHTML = CASES.map(c => `
+                <div onclick="openCaseModal(${JSON.stringify(c).replace(/"/g, '&quot;')})" 
+                     class="glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-2 active:scale-95 transition-all">
+                    <div class="text-4xl">📦</div>
+                    <p class="font-bold text-sm">${c.name}</p>
+                    <p class="text-xs text-blue-400 font-bold uppercase">${c.price || 'Бесплатно'}</p>
+                </div>
+            `).join('');
         }
 
         window.openCaseModal = function(c) {
             activeCase = c;
             document.getElementById('modal-title').innerText = c.name;
-            document.getElementById('modal-price').innerText = c.price === 0 ? "Ежедневный бонус" : c.price + " ⭐";
+            document.getElementById('modal-price').innerText = c.price === 0 ? "Бесплатный кейс" : c.price + " ⭐";
             document.getElementById('drop-list-items').innerHTML = c.loot.map(l => `
                 <div class="glass p-2 flex flex-col items-center relative">
                     <span class="text-[8px] absolute top-1 right-1 text-blue-400">${l.chance}%</span>
@@ -223,23 +230,27 @@
             isSpinning = true;
             balance -= activeCase.price;
             updateUI();
+
             document.getElementById('droplist-view').classList.add('hidden');
             document.getElementById('open-btn').style.display = 'none';
             document.getElementById('roulette-view').classList.remove('hidden');
+
             const rand = Math.random() * 100;
             let cum = 0; let winner = activeCase.loot[0].item;
             for(let l of activeCase.loot) { cum += l.chance; if(rand <= cum) { winner = l.item; break; } }
+
             const strip = document.getElementById('roulette-strip');
-            strip.style.transition = 'none'; strip.style.transform = 'translateX(0)';
             let html = '';
             for(let i=0; i<60; i++) html += `<div class="roulette-item"><span class="text-3xl">${activeCase.loot[Math.floor(Math.random()*activeCase.loot.length)].item.emoji}</span></div>`;
             strip.innerHTML = html;
             strip.children[55].innerHTML = `<span class="text-3xl">${winner.emoji}</span>`;
+
             setTimeout(() => {
                 const target = (55 * 100) - (document.querySelector('.roulette-wrapper').offsetWidth / 2) + 50;
                 strip.style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.15, 1)';
                 strip.style.transform = `translateX(-${target}px)`;
             }, 50);
+
             setTimeout(() => {
                 if(winner.name.includes('Звезд')) balance += winner.value;
                 else inventory.unshift({...winner, id: Date.now()});
@@ -250,7 +261,12 @@
             }, 5500);
         }
 
-        window.closeModal = function() { if(!isSpinning) { document.getElementById('modal-content').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300); } }
+        window.closeModal = function() { 
+            if(!isSpinning) { 
+                document.getElementById('modal-content').style.transform = 'translateY(100%)'; 
+                setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300); 
+            } 
+        }
         
         window.showPage = function(p) {
             document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
