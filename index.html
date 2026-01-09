@@ -6,6 +6,7 @@
     <title>Telegram Case Opening</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* [ВСЁ ТОЖЕ САМОЕ - CSS не менялся] */
         :root {
             --tg-theme-bg-color: #1a1a1a;
             --tg-theme-text-color: #ffffff;
@@ -467,7 +468,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Opening Animation - СТРЕЛОЧКА ДОБАВЛЕНА */
+        /* Opening Animation */
         .opening-container {
             height: 200px;
             overflow: hidden;
@@ -737,20 +738,6 @@
             font-size: 12px;
             opacity: 0.8;
         }
-
-        /* Win highlight */
-        .win-highlight {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
     </style>
 </head>
 <body>
@@ -791,7 +778,6 @@
         <div id="cases-section" class="section active">
             <h2 style="margin: 20px 0; font-size: 22px;">Доступные кейсы</h2>
             <div class="cases-grid">
-                <!-- Case 1 -->
                 <div class="case-card free" data-case="free">
                     <div class="case-icon">🎁</div>
                     <div class="case-name">Бесплатный</div>
@@ -800,7 +786,6 @@
                     <button class="case-button secondary view-drop-btn" data-case="free">Что выпадает</button>
                 </div>
                 
-                <!-- Case 2 -->
                 <div class="case-card bumzh" data-case="bumzh">
                     <div class="case-icon">📦</div>
                     <div class="case-name">Бомж кейс</div>
@@ -809,7 +794,6 @@
                     <button class="case-button secondary view-drop-btn" data-case="bumzh">Что выпадает</button>
                 </div>
                 
-                <!-- Case 3 -->
                 <div class="case-card normal" data-case="normal">
                     <div class="case-icon">💎</div>
                     <div class="case-name">Нормалик</div>
@@ -818,7 +802,6 @@
                     <button class="case-button secondary view-drop-btn" data-case="normal">Что выпадает</button>
                 </div>
                 
-                <!-- Case 4 -->
                 <div class="case-card rocket" data-case="rocket">
                     <div class="case-icon">🚀</div>
                     <div class="case-name">Ракетка</div>
@@ -827,7 +810,6 @@
                     <button class="case-button secondary view-drop-btn" data-case="rocket">Что выпадает</button>
                 </div>
                 
-                <!-- Case 5 -->
                 <div class="case-card world" data-case="world">
                     <div class="case-icon">🌍</div>
                     <div class="case-name">Мир</div>
@@ -900,7 +882,7 @@
         </div>
     </div>
 
-    <!-- Modal for opening case - СТРЕЛОЧКА ДОБАВЛЕНА -->
+    <!-- Modal for opening case -->
     <div class="modal-overlay" id="open-modal">
         <div class="modal">
             <div class="modal-header">
@@ -909,7 +891,6 @@
             </div>
             <div id="open-content">
                 <div class="opening-container">
-                    <!-- Стрелочка-указатель -->
                     <div class="wheel-pointer"></div>
                     <div class="items-wheel" id="items-wheel">
                         <!-- Will be filled by JavaScript -->
@@ -946,13 +927,12 @@
 
     <script>
         // ============================================
-        // MAIN APPLICATION CODE
+        // MAIN APPLICATION CODE - ИСПРАВЛЕННАЯ ЛОГИКА
         // ============================================
         
-        // Telegram Web App initialization - ИСПРАВЛЕНО ДЛЯ ПРОФИЛЯ
+        // Telegram Web App initialization
         let tg = window.Telegram?.WebApp;
         
-        // Если открыто не в Telegram, создаём заглушку с реальными данными
         if (!tg) {
             console.log('Not in Telegram, using mock data');
             tg = {
@@ -971,11 +951,9 @@
             };
         }
         
-        // Initialize Telegram
         tg.expand();
         tg.ready();
         
-        // User data - БЕРЁМ РЕАЛЬНЫЕ ДАННЫЕ ИЗ TELEGRAM
         const user = tg.initDataUnsafe?.user;
         
         // Application state
@@ -990,12 +968,10 @@
             selectedItem: null
         };
         
-        // Cases configuration
         const casesConfig = {
             free: {
                 name: "Бесплатный кейс",
                 price: 0,
-                color: "#4facfe",
                 items: [
                     { type: "star", icon: "⭐", name: "1 звезда", price: 1, chance: 90 },
                     { type: "gift", icon: "🧸", name: "Мишка", price: 15, chance: 7 },
@@ -1005,7 +981,6 @@
             bumzh: {
                 name: "Бомж кейс",
                 price: 25,
-                color: "#43e97b",
                 items: [
                     { type: "star", icon: "⭐", name: "5 звезд", price: 5, chance: 60 },
                     { type: "star", icon: "⭐", name: "10 звезд", price: 10, chance: 20 },
@@ -1017,41 +992,31 @@
             normal: {
                 name: "Нормалик",
                 price: 50,
-                color: "#fa709a",
                 items: [
                     { type: "gift", icon: "🧸", name: "Мишка", price: 15, chance: 50 },
                     { type: "gift", icon: "🎂", name: "Тортик", price: 50, chance: 35 },
                     { type: "gift", icon: "🚀", name: "Ракета", price: 100, chance: 14.9 },
-                    { type: "nft", icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1, 
-                      image: "https://cdn-icons-png.flaticon.com/512/2237/2237288.png" }
+                    { type: "nft", icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1 }
                 ]
             },
             rocket: {
                 name: "Ракетка",
                 price: 100,
-                color: "#a8edea",
                 items: [
                     { type: "gift", icon: "🎂", name: "Тортик", price: 50, chance: 50 },
                     { type: "gift", icon: "🚀", name: "Ракета", price: 100, chance: 44.9 },
-                    { type: "nft", icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 5,
-                      image: "https://cdn-icons-png.flaticon.com/512/2237/2237288.png" }
+                    { type: "nft", icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 5 }
                 ]
             },
             world: {
                 name: "Мир",
                 price: 500,
-                color: "#d299c2",
                 items: [
-                    { type: "nft", icon: "🖼", name: "NFT Moon", price: 300, chance: 40,
-                      image: "https://cdn-icons-png.flaticon.com/512/523/523110.png" },
-                    { type: "nft", icon: "🖼", name: "NFT Star", price: 400, chance: 30,
-                      image: "https://cdn-icons-png.flaticon.com/512/2582/2582637.png" },
-                    { type: "nft", icon: "🖼", name: "NFT Galaxy", price: 500, chance: 20,
-                      image: "https://cdn-icons-png.flaticon.com/512/2909/2909761.png" },
-                    { type: "nft", icon: "🖼", name: "NFT Universe", price: 600, chance: 8,
-                      image: "https://cdn-icons-png.flaticon.com/512/2909/2909797.png" },
-                    { type: "nft", icon: "🖼", name: "NFT Infinity", price: 800, chance: 2,
-                      image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }
+                    { type: "nft", icon: "🖼", name: "NFT Moon", price: 300, chance: 40 },
+                    { type: "nft", icon: "🖼", name: "NFT Star", price: 400, chance: 30 },
+                    { type: "nft", icon: "🖼", name: "NFT Galaxy", price: 500, chance: 20 },
+                    { type: "nft", icon: "🖼", name: "NFT Universe", price: 600, chance: 8 },
+                    { type: "nft", icon: "🖼", name: "NFT Infinity", price: 800, chance: 2 }
                 ]
             }
         };
@@ -1108,7 +1073,6 @@
                 elements.statsStars.textContent = appState.totalStarsWon;
                 elements.statsNft.textContent = appState.nftCount;
                 
-                // Update last wins
                 elements.lastWins.innerHTML = '';
                 const displayWins = appState.lastWins.slice(-4).reverse();
                 
@@ -1129,7 +1093,8 @@
                 });
             },
             
-            getRandomItem: function(items) {
+            // ВАЖНО: функция для взвешенного рандома
+            getWeightedRandomItem: function(items) {
                 const totalChance = items.reduce((sum, item) => sum + item.chance, 0);
                 let random = Math.random() * totalChance;
                 
@@ -1142,7 +1107,7 @@
                 return items[0];
             },
             
-            // ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ПРОФИЛЯ TELEGRAM
+            // Инициализация профиля
             initUserProfile: function() {
                 if (!user) {
                     elements.userName.textContent = 'Гость';
@@ -1168,19 +1133,16 @@
                     elements.userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fas fa-user\"></i>';">`;
                     elements.userAvatar.style.backgroundImage = `url(${user.photo_url})`;
                 } else {
-                    // Градиент на основе ID
                     const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
                     const colorIndex = user.id ? user.id % colors.length : 0;
                     const color = colors[colorIndex];
                     elements.userAvatar.style.background = `linear-gradient(135deg, ${color} 0%, ${color}80 100%)`;
                     elements.userAvatar.innerHTML = '<i class="fas fa-user"></i>';
                 }
-                
-                console.log('User profile loaded:', user);
             }
         };
         
-        // Modal functions
+        // Modal functions - ИСПРАВЛЕННАЯ ЛОГИКА ПРОКРУТКИ
         const modal = {
             showDropModal: function(caseType) {
                 const caseData = casesConfig[caseType];
@@ -1190,7 +1152,7 @@
                 caseData.items.forEach(item => {
                     itemsHTML += `
                         <div class="item-card">
-                            ${item.image ? `<img src="${item.image}" class="nft-image" alt="${item.name}">` : `<div class="item-icon">${item.icon}</div>`}
+                            <div class="item-icon">${item.icon}</div>
                             <div class="item-name">${item.name}</div>
                             <div class="item-price">${item.price} ⭐</div>
                             <div class="item-chance">${item.chance}%</div>
@@ -1224,7 +1186,6 @@
             showOpenModal: function(caseType) {
                 const caseData = casesConfig[caseType];
                 
-                // Check balance
                 if (appState.balance < caseData.price && caseType !== 'free') {
                     utils.showNotification(`Недостаточно звёзд! Нужно: ${caseData.price} ⭐`);
                     return;
@@ -1233,17 +1194,18 @@
                 appState.currentCaseType = caseType;
                 elements.openModalTitle.textContent = `Открытие: ${caseData.name}`;
                 
-                // Prepare wheel
+                // Подготовка колеса
                 elements.itemsWheel.innerHTML = '';
-                const itemsToShow = [];
                 
-                // Generate wheel items
-                for (let i = 0; i < 50; i++) {
+                // Создаем кольцо элементов (достаточно длинное для анимации)
+                const wheelItems = [];
+                for (let i = 0; i < 30; i++) {
                     const randomItem = caseData.items[Math.floor(Math.random() * caseData.items.length)];
-                    itemsToShow.push(randomItem);
+                    wheelItems.push(randomItem);
                 }
                 
-                itemsToShow.forEach((item, index) => {
+                // Отображаем элементы на колесе
+                wheelItems.forEach((item, index) => {
                     const wheelItem = document.createElement('div');
                     wheelItem.className = 'wheel-item';
                     wheelItem.dataset.index = index;
@@ -1255,7 +1217,7 @@
                     elements.itemsWheel.appendChild(wheelItem);
                 });
                 
-                // Reset UI
+                // Сброс UI
                 elements.resultContent.style.display = 'none';
                 elements.itemsWheel.style.display = 'flex';
                 elements.itemsWheel.style.transform = 'translateX(0)';
@@ -1263,7 +1225,7 @@
                 elements.spinBtn.disabled = false;
                 elements.spinBtn.textContent = 'Крутить!';
                 
-                // Deduct price if not free
+                // Списание стоимости
                 if (caseType !== 'free') {
                     appState.balance -= caseData.price;
                     appState.openedCases++;
@@ -1289,53 +1251,71 @@
                 elements.spinBtn.innerHTML = '<div class="loading"></div>';
                 
                 const caseData = casesConfig[appState.currentCaseType];
-                appState.selectedItem = utils.getRandomItem(caseData.items);
                 
-                // Animate wheel
+                // 1. ВАЖНО: сначала определяем выигрышный предмет по вероятностям
+                appState.selectedItem = utils.getWeightedRandomItem(caseData.items);
+                console.log('Выигрышный предмет:', appState.selectedItem);
+                
+                // 2. Подготовка анимации
                 const wheel = elements.itemsWheel;
-                const itemWidth = 122;
-                const spinDuration = 3000;
+                const itemWidth = 122; // ширина одного элемента
+                const spinDuration = 4000; // 4 секунды анимации
                 const startTime = Date.now();
                 
-                // Выбираем позицию так, чтобы выигрышный элемент оказался под стрелкой
-                const items = Array.from(wheel.querySelectorAll('.wheel-item'));
-                const selectedIndex = 25 + Math.floor(Math.random() * 10);
-                const targetPosition = -(selectedIndex * itemWidth);
+                // 3. Вычисляем нужную позицию для остановки выигрышного предмета под стрелкой
+                // Стрелка находится на 50% ширины контейнера (центр)
+                // Мы хотим, чтобы выигрышный предмет оказался под стрелкой
                 
-                // Находим элемент, который окажется под стрелкой
-                const centerIndex = Math.abs(Math.floor(targetPosition / itemWidth) % items.length);
+                // Создаем "кольцо" с выигрышным предметом в нужной позиции
+                const itemsOnWheel = Array.from(wheel.querySelectorAll('.wheel-item'));
                 
-                // Заменяем центральный элемент на выигрышный (для демонстрации)
-                setTimeout(() => {
-                    const centerItem = items[centerIndex];
-                    if (centerItem) {
-                        centerItem.innerHTML = `
-                            <div style="font-size: 48px; margin-bottom: 10px;">${appState.selectedItem.icon}</div>
-                            <div style="font-size: 11px; text-align: center;">${appState.selectedItem.name}</div>
-                        `;
-                        centerItem.dataset.item = JSON.stringify(appState.selectedItem);
-                    }
-                }, spinDuration - 500);
+                // Находим индекс элемента, который будет под стрелкой в конце
+                // Выбираем позицию где-то в середине колеса (для эффекта прокрутки)
+                const targetIndexUnderPointer = 15; // элемент под стрелкой
                 
+                // Заменяем элемент под стрелкой на выигрышный
+                const targetItem = itemsOnWheel[targetIndexUnderPointer];
+                if (targetItem) {
+                    targetItem.innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 10px;">${appState.selectedItem.icon}</div>
+                        <div style="font-size: 11px; text-align: center;">${appState.selectedItem.name}</div>
+                    `;
+                    targetItem.dataset.item = JSON.stringify(appState.selectedItem);
+                }
+                
+                // 4. Рассчитываем конечную позицию прокрутки
+                // Нужно сдвинуть колесо так, чтобы targetIndexUnderPointer оказался под стрелкой
+                // Стрелка находится на позиции 0px (начало контейнера), но мы хотим чтобы элемент был в центре
+                const containerCenter = 150; // половина ширины контейнера
+                const itemCenter = targetIndexUnderPointer * itemWidth + itemWidth / 2;
+                const targetPosition = containerCenter - itemCenter;
+                
+                // Добавляем несколько полных прокруток для эффекта
+                const fullSpins = 5; // 5 полных прокруток
+                const totalTargetPosition = targetPosition - (fullSpins * itemsOnWheel.length * itemWidth);
+                
+                // 5. Анимация
                 function animate() {
                     const elapsed = Date.now() - startTime;
                     const progress = Math.min(elapsed / spinDuration, 1);
                     
-                    // Сначала быстро, потом медленно
-                    let easeOut;
+                    // Сложная easing функция: быстро начинаем, медленно заканчиваем
+                    let easeProgress;
                     if (progress < 0.7) {
-                        easeOut = progress / 0.7;
+                        // Первые 70% - быстро
+                        easeProgress = progress / 0.7;
                     } else {
-                        easeOut = 0.7 + (progress - 0.7) * 0.3;
+                        // Последние 30% - медленно с ease-out
+                        easeProgress = 0.7 + (1 - Math.pow(1 - (progress - 0.7) / 0.3, 3)) * 0.3;
                     }
                     
-                    const currentPosition = targetPosition * easeOut;
+                    const currentPosition = totalTargetPosition * easeProgress;
                     wheel.style.transform = `translateX(${currentPosition}px)`;
                     
                     // Подсвечиваем выигрышный элемент в конце
                     if (progress > 0.95) {
-                        items.forEach((item, idx) => {
-                            if (idx === centerIndex) {
+                        itemsOnWheel.forEach((item, idx) => {
+                            if (idx === targetIndexUnderPointer) {
                                 item.classList.add('winner');
                             } else {
                                 item.classList.remove('winner');
@@ -1346,9 +1326,10 @@
                     if (progress < 1) {
                         requestAnimationFrame(animate);
                     } else {
+                        // Анимация завершена
                         setTimeout(() => {
                             modal.showResult(appState.selectedItem);
-                        }, 1500);
+                        }, 1000);
                     }
                 }
                 
@@ -1359,12 +1340,12 @@
                 elements.itemsWheel.style.display = 'none';
                 elements.spinBtn.style.display = 'none';
                 
-                // Update stats
+                // Обновляем статистику
                 appState.balance += item.price;
                 appState.totalStarsWon += item.price;
                 if (item.type === 'nft') appState.nftCount++;
                 
-                // Add to history
+                // Добавляем в историю
                 appState.lastWins.push({
                     icon: item.icon,
                     name: item.name,
@@ -1373,16 +1354,14 @@
                     timestamp: Date.now()
                 });
                 
-                // Keep only last 10 wins
                 if (appState.lastWins.length > 10) {
                     appState.lastWins = appState.lastWins.slice(-10);
                 }
                 
-                // Update UI and save
                 utils.updateUI();
                 utils.saveState();
                 
-                // Show result
+                // Показываем результат
                 elements.resultContent.style.display = 'block';
                 elements.resultContent.innerHTML = `
                     <div class="result-card">
@@ -1406,7 +1385,6 @@
         // Tab switching
         const tabs = {
             switchTab: function(tabName) {
-                // Update tab buttons
                 document.querySelectorAll('.tab, .footer-tab').forEach(tab => {
                     if (tab.dataset.tab === tabName) {
                         tab.classList.add('active');
@@ -1415,7 +1393,6 @@
                     }
                 });
                 
-                // Show active section
                 document.querySelectorAll('.section').forEach(section => {
                     if (section.id === `${tabName}-section`) {
                         section.classList.add('active');
@@ -1429,18 +1406,10 @@
         // Event handlers
         const events = {
             init: function() {
-                // Load saved state
                 utils.loadState();
-                
-                // Initialize user profile from Telegram
                 utils.initUserProfile();
-                
-                // Update UI
                 utils.updateUI();
-                
-                // Set up event listeners
                 this.setupListeners();
-                
                 console.log('Application initialized successfully');
             },
             
@@ -1457,13 +1426,11 @@
                 document.addEventListener('click', (e) => {
                     const target = e.target;
                     
-                    // View drop buttons
                     if (target.classList.contains('view-drop-btn')) {
                         const caseType = target.dataset.case;
                         modal.showDropModal(caseType);
                     }
                     
-                    // Open case buttons
                     if (target.classList.contains('open-btn')) {
                         const caseType = target.dataset.case;
                         modal.showOpenModal(caseType);
@@ -1501,10 +1468,7 @@
             }
         };
         
-        // Make modal functions available globally for onclick handlers
         window.app = { modal };
-        
-        // Initialize application when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => events.init());
     </script>
 </body>
