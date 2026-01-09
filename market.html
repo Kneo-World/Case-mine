@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Case-Mine | Market</title>
+    <title>Case-Mine | Онлайн Рынок</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -12,61 +12,55 @@
         :root { --tg-bg: #0b0e14; --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Inter', sans-serif; background: var(--tg-bg); color: white; margin: 0; }
         .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; }
-        .nav-item.active { color: var(--accent); opacity: 1; }
+        .page { padding: 20px; padding-bottom: 100px; }
         ::-webkit-scrollbar { display: none; }
-        .page { display: none; padding: 20px; padding-bottom: 100px; }
-        .page.active { display: block; }
     </style>
 </head>
 <body>
 
-    <header class="sticky top-0 z-50 bg-[#0b0e14]/80 backdrop-blur-md p-4 flex justify-between items-center">
-        <div class="flex gap-2">
-            <div class="glass px-3 py-1 flex items-center gap-2">
-                <span class="text-yellow-400">⭐</span>
-                <span id="star-balance" class="font-bold text-sm">0</span>
-            </div>
+    <header class="sticky top-0 z-50 bg-[#0b0e14]/80 backdrop-blur-md p-4 flex justify-between items-center border-b border-white/5">
+        <div class="glass px-3 py-1 flex items-center gap-2">
+            <span class="text-yellow-400">⭐</span>
+            <span id="market-balance" class="font-bold text-sm">0</span>
         </div>
-        <div class="text-xs font-bold text-blue-400">MARKETPLACE</div>
+        <div class="text-xs font-bold text-blue-400">ONLINE MARKET</div>
     </header>
 
-    <section id="page-market" class="page active">
-        <h2 class="text-xl font-bold mb-4">Живой рынок 🌍</h2>
-        <div id="online-market-grid" class="grid grid-cols-2 gap-3">
-            </div>
-    </section>
+    <main class="page">
+        <div class="mb-6">
+            <h2 class="text-xl font-bold">Вещи других игроков</h2>
+            <p class="text-[10px] opacity-50">Обновляется в реальном времени</p>
+        </div>
 
-    <section id="page-inventory" class="page">
-        <h2 class="text-xl font-bold mb-4">Мои подарки</h2>
-        <div id="my-inventory-grid" class="grid grid-cols-2 gap-3">
-            </div>
-    </section>
+        <div id="online-grid" class="grid grid-cols-2 gap-3">
+            <div class="col-span-2 text-center py-10 opacity-50 text-xs">Загрузка товаров...</div>
+        </div>
+    </main>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/5 flex justify-around items-center z-50">
-        <button onclick="showPage('market')" id="nav-market" class="nav-item active flex flex-col items-center gap-1">
-            <i data-lucide="globe" class="w-5 h-5"></i><span class="text-[10px] font-bold">РЫНОК</span>
+        <button onclick="window.location.href='index.html'" class="flex flex-col items-center gap-1 opacity-50">
+            <i data-lucide="package" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold">КЕЙСЫ</span>
         </button>
-        <button onclick="showPage('inventory')" id="nav-inventory" class="nav-item opacity-50 flex flex-col items-center gap-1">
-            <i data-lucide="package" class="w-5 h-5"></i><span class="text-[10px] font-bold">МОИ ВЕЩИ</span>
-        </button>
-        <button onclick="window.location.href='index.html'" class="nav-item opacity-50 flex flex-col items-center gap-1">
-            <i data-lucide="arrow-left" class="w-5 h-5"></i><span class="text-[10px] font-bold">КЕЙСЫ</span>
+        <button class="flex flex-col items-center gap-1 text-blue-500">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold">МАРКЕТ</span>
         </button>
     </nav>
 
     <script type="module">
+        // Импорт Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // КОНФИГ ИЗ ТВОЕГО СООБЩЕНИЯ
+        // Твой конфиг
         const firebaseConfig = {
             apiKey: "AIzaSyDnmAysvjn6Zu-pbddOhXDt1ohnZaY1Fcw",
             authDomain: "casemine-online.firebaseapp.com",
             projectId: "casemine-online",
             storageBucket: "casemine-online.firebasestorage.app",
             messagingSenderId: "750443799326",
-            appId: "1:750443799326:web:edec309f732337e39a1f0f",
-            measurementId: "G-53DGVYVD33"
+            appId: "1:750443799326:web:edec309f732337e39a1f0f"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -74,142 +68,79 @@
         const marketRef = ref(db, 'online_market');
         const tg = window.Telegram.WebApp;
 
+        // Данные из localStorage (синхрон с кейсами)
         const SHARED_KEY = 'casemine_inventory';
         const BALANCE_KEY = 'balance';
 
-        let myInventory = JSON.parse(localStorage.getItem(SHARED_KEY)) || [];
-        let myStars = parseFloat(localStorage.getItem(BALANCE_KEY)) || 0;
+        let balance = parseFloat(localStorage.getItem(BALANCE_KEY)) || 0;
+        let inventory = JSON.parse(localStorage.getItem(SHARED_KEY)) || [];
 
-        function init() {
-            lucide.createIcons();
-            updateUI();
-            tg.expand();
+        function updateHeader() {
+            document.getElementById('market-balance').innerText = balance.toFixed(0);
+            localStorage.setItem(BALANCE_KEY, balance);
+            localStorage.setItem(SHARED_KEY, JSON.stringify(inventory));
         }
 
-        function updateUI() {
-            document.getElementById('star-balance').innerText = myStars.toFixed(0);
-            localStorage.setItem(SHARED_KEY, JSON.stringify(myInventory));
-            localStorage.setItem(BALANCE_KEY, myStars);
-            renderMyInventory();
-        }
-
-        // 1. Отрисовка личного инвентаря
-        window.renderMyInventory = function() {
-            const grid = document.getElementById('my-inventory-grid');
-            if (myInventory.length === 0) {
-                grid.innerHTML = "<p class='col-span-2 text-center opacity-50 py-10'>Инвентарь пуст</p>";
-                return;
-            }
-            grid.innerHTML = myInventory.map((item, idx) => `
-                <div class="glass p-4 flex flex-col items-center text-center">
-                    <span class="text-4xl mb-2">${item.emoji}</span>
-                    <span class="text-[10px] font-bold mb-3">${item.name}</span>
-                    <div class="flex flex-col gap-2 w-full">
-                        <button onclick="fastSell(${idx})" class="bg-red-500/20 text-red-400 text-[8px] font-bold py-2 rounded">ФАСТ ПРОДАЖА (-10%)</button>
-                        <button onclick="listToOnlineMarket(${idx})" class="bg-blue-600 text-white text-[8px] font-bold py-2 rounded">ВЫСТАВИТЬ НА РЫНОК</button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        // 2. БЫСТРАЯ ПРОДАЖА (-10%)
-        window.fastSell = function(idx) {
-            const item = myInventory[idx];
-            const price = item.value * 0.9; // Забираем 10%
-            tg.showConfirm(`Продать ${item.name} моментально за ${price.toFixed(0)} ⭐?`, (ok) => {
-                if(ok) {
-                    myStars += price;
-                    myInventory.splice(idx, 1);
-                    tg.HapticFeedback.notificationOccurred('success');
-                    updateUI();
-                }
-            });
-        };
-
-        // 3. ВЫСТАВИТЬ НА ОНЛАЙН РЫНОК
-        window.listToOnlineMarket = function(idx) {
-            const item = myInventory[idx];
-            const sellerName = tg.initDataUnsafe?.user?.first_name || "Игрок";
-            
-            push(marketRef, {
-                ...item,
-                seller: sellerName,
-                sellerId: tg.initDataUnsafe?.user?.id || "0",
-                listTime: Date.now()
-            }).then(() => {
-                myInventory.splice(idx, 1);
-                updateUI();
-                tg.showAlert("Предмет теперь видят все!");
-            });
-        };
-
-        // 4. ПОКУПКА У ДРУГИХ ИГРОКОВ
+        // Покупка товара
         window.buyItem = function(key, price, name, emoji) {
-            if (myStars < price) {
-                tg.showAlert("Недостаточно звезд!");
+            if (balance < price) {
+                tg.showAlert("Недостаточно звезд для покупки!");
                 return;
             }
+
             tg.showConfirm(`Купить ${name} за ${price} ⭐?`, (ok) => {
-                if(ok) {
+                if (ok) {
                     const itemRef = ref(db, 'online_market/' + key);
+                    
+                    // Удаляем из базы (бронируем покупку)
                     remove(itemRef).then(() => {
-                        myStars -= price;
-                        myInventory.unshift({ name, emoji, value: price });
-                        updateUI();
+                        balance -= price;
+                        inventory.push({ name, emoji, value: price });
+                        updateHeader();
                         tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert("Куплено! Предмет в вашем инвентаре.");
+                        tg.showAlert("Куплено! Предмет добавлен в ваш профиль.");
                     }).catch(() => {
-                        tg.showAlert("Похоже, товар уже кто-то купил!");
+                        tg.showAlert("Ошибка: товар уже купил кто-то другой!");
                     });
                 }
             });
         };
 
-        // 5. ПОЛУЧЕНИЕ ДАННЫХ С РЫНКА (ОНЛАЙН)
+        // Слушатель базы данных
         onValue(marketRef, (snapshot) => {
             const data = snapshot.val();
-            const grid = document.getElementById('online-market-grid');
+            const grid = document.getElementById('online-grid');
             grid.innerHTML = "";
+
             if (!data) {
-                grid.innerHTML = "<p class='col-span-2 text-center opacity-50 py-10'>На рынке пока пусто...</p>";
+                grid.innerHTML = "<p class='col-span-2 text-center opacity-50 py-10'>На рынке пока нет товаров</p>";
                 return;
             }
+
             Object.keys(data).forEach(key => {
                 const item = data[key];
-                // Не показываем свои же товары в списке покупки (опционально)
                 const isMine = item.sellerId == tg.initDataUnsafe?.user?.id;
-                
+
                 grid.innerHTML += `
                     <div class="glass p-4 flex flex-col items-center text-center relative">
-                        ${isMine ? '<span class="absolute top-2 right-2 text-[7px] bg-blue-500 px-1 rounded">ВАШ</span>' : ''}
                         <span class="text-4xl mb-2">${item.emoji}</span>
-                        <span class="text-[10px] font-bold">${item.name}</span>
-                        <p class="text-[7px] opacity-50 mt-1">Продавец: ${item.seller}</p>
+                        <div class="text-[10px] font-bold mb-1">${item.name}</div>
+                        <div class="text-[8px] opacity-40 mb-3 text-blue-300 uppercase">Продавец: ${item.seller}</div>
+                        
                         <button onclick="buyItem('${key}', ${item.value}, '${item.name}', '${item.emoji}')" 
-                                ${isMine ? 'disabled class="mt-3 w-full bg-white/10 opacity-50 text-[9px] py-2 rounded"' : 'class="mt-3 w-full bg-blue-600 text-[9px] py-2 rounded"'} >
-                            КУПИТЬ ${item.value} ⭐
+                                class="${isMine ? 'bg-white/10 opacity-50' : 'bg-blue-600 active:scale-95'} w-full py-2 rounded-xl text-[10px] font-bold transition-all"
+                                ${isMine ? 'disabled' : ''}>
+                            ${isMine ? 'ТВОЙ ТОВАР' : 'КУПИТЬ ' + item.value + ' ⭐'}
                         </button>
                     </div>
                 `;
             });
         });
 
-        // Навигация по страницам
-        window.showPage = function(p) {
-            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.add('opacity-50', 'active')); // сброс
-            document.getElementById('page-' + p).classList.add('active');
-            
-            // Визуальный фокус на иконку
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.add('opacity-50'));
-            document.getElementById('nav-' + p).classList.remove('opacity-50');
-            
-            if(p === 'inventory') renderMyInventory();
-            tg.HapticFeedback.impactOccurred('light');
-        };
-
-        window.init = init;
-        init();
+        // Инициализация
+        lucide.createIcons();
+        updateHeader();
+        tg.expand();
 
     </script>
 </body>
