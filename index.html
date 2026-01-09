@@ -2,812 +2,1162 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StarCases - Telegram Web App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Case Opening</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --tg-theme-bg-color: #0f172a;
-            --tg-theme-secondary-bg-color: #1e293b;
-            --tg-theme-text-color: #f8fafc;
-            --tg-theme-hint-color: #94a3b8;
-            --tg-theme-link-color: #38bdf8;
-            --tg-theme-button-color: #0ea5e9;
+            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #aaaaaa;
+            --tg-theme-link-color: #5ec5ff;
+            --tg-theme-button-color: #3390ec;
             --tg-theme-button-text-color: #ffffff;
-            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            --rarity-common: #94a3b8;
-            --rarity-rare: #3b82f6;
-            --rarity-epic: #a855f7;
-            --rarity-legendary: #eab308;
+            --tg-theme-secondary-bg-color: #2d2d2d;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gold-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            --star-gradient: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+            --nft-gradient: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
+            --case-1: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --case-2: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --case-3: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --case-4: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --case-5: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --radius: 16px;
+            --transition: all 0.3s ease;
         }
 
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--tg-theme-bg-color);
             color: var(--tg-theme-text-color);
-            overflow-x: hidden;
-            user-select: none;
-        }
-
-        /* Layout */
-        #app {
-            display: flex;
-            flex-direction: column;
             min-height: 100vh;
             padding-bottom: 80px;
+            overflow-x: hidden;
         }
 
-        .container {
-            padding: 16px;
-            max-width: 600px;
+        .app-container {
+            max-width: 100%;
             margin: 0 auto;
-            width: 100%;
         }
 
-        /* Typography */
-        h1, h2, h3 {
-            margin: 0;
+        /* Header */
+        .header {
+            background: var(--primary-gradient);
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: float 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        /* Balance */
+        .balance-card {
+            background: var(--secondary-gradient);
+            margin: 20px 16px;
+            padding: 20px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            transform: translateY(0);
+            transition: var(--transition);
+        }
+
+        .balance-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .balance-info h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            display: flex;
+            align-items: center;
+            font-size: 32px;
             font-weight: 700;
         }
 
-        .section-title {
-            font-size: 24px;
+        .balance-amount i {
+            color: gold;
+            margin-right: 10px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Tabs */
+        .tab-container {
+            display: flex;
+            background: var(--tg-theme-secondary-bg-color);
+            margin: 0 16px;
+            border-radius: var(--radius);
+            overflow: hidden;
             margin-bottom: 20px;
-            padding: 0 4px;
         }
 
-        /* Tabs Navigation */
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(15px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--tg-theme-hint-color);
-            text-decoration: none;
-            font-size: 12px;
-            transition: all 0.3s ease;
+        .tab {
             flex: 1;
+            text-align: center;
+            padding: 16px 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
         }
 
-        .tab-item.active {
-            color: var(--tg-theme-button-color);
+        .tab.active {
+            background: var(--primary-gradient);
+            color: white;
         }
 
-        .tab-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
+        .tab i {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            padding: 0 16px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Cases Grid */
         .cases-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 16px;
+            margin-top: 20px;
         }
 
         .case-card {
             background: var(--tg-theme-secondary-bg-color);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: var(--radius);
+            padding: 20px 15px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.2s active;
-            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            cursor: pointer;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .case-card:active {
-            transform: scale(0.95);
+        .case-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow);
         }
+
+        .case-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+
+        .case-card.free::before { background: var(--case-1); }
+        .case-card.bumzh::before { background: var(--case-2); }
+        .case-card.normal::before { background: var(--case-3); }
+        .case-card.rocket::before { background: var(--case-4); }
+        .case-card.world::before { background: var(--case-5); }
 
         .case-icon {
-            font-size: 64px;
+            font-size: 48px;
             margin-bottom: 15px;
-            display: block;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .case-name {
-            font-size: 18px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .case-price {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .case-price i {
+            color: gold;
+            margin-right: 5px;
+        }
+
+        .case-button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .case-button:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .item-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-name {
+            font-size: 13px;
             margin-bottom: 8px;
             font-weight: 600;
         }
 
-        .case-price {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 6px 12px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 700;
-            color: #fbbf24;
-        }
-
-        .btn-view {
-            margin-top: 12px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--tg-theme-hint-color);
-            padding: 6px 10px;
-            border-radius: 8px;
+        .item-price {
             font-size: 12px;
-            width: 100%;
-            cursor: pointer;
+            color: gold;
+            font-weight: 700;
         }
 
-        /* Profile Section */
-        .profile-header {
+        .item-chance {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 10px;
+        }
+
+        /* Profile */
+        .profile-card {
+            background: var(--primary-gradient);
+            border-radius: var(--radius);
+            padding: 30px 20px;
             text-align: center;
-            padding: 30px 0;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
         }
 
-        .avatar-container {
+        .profile-avatar {
             width: 100px;
             height: 100px;
-            margin: 0 auto 15px;
-            position: relative;
-        }
-
-        .avatar-img {
-            width: 100%;
-            height: 100%;
             border-radius: 50%;
-            border: 4px solid var(--tg-theme-button-color);
-            object-fit: cover;
-        }
-
-        .user-name {
-            font-size: 22px;
-            margin-bottom: 5px;
-        }
-
-        .balance-card {
-            background: var(--accent-gradient);
-            border-radius: 20px;
-            padding: 25px;
-            margin-top: 20px;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
-        }
-
-        .balance-label {
-            font-size: 14px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .balance-value {
-            font-size: 36px;
-            font-weight: 800;
-            margin-top: 5px;
+            margin: 0 auto 20px;
+            background: var(--tg-theme-secondary-bg-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            font-size: 48px;
+            border: 5px solid white;
+            overflow: hidden;
         }
 
-        /* Modal / Roulette Screen */
-        .modal {
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-id {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        /* Deposit */
+        .deposit-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: var(--radius);
+            padding: 40px 20px;
+            text-align: center;
+            margin-top: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .deposit-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .deposit-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .deposit-text {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        /* Modal */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--tg-theme-bg-color);
-            z-index: 2000;
+            background: rgba(0, 0, 0, 0.8);
             display: none;
-            flex-direction: column;
-            animation: slideUp 0.3s ease-out;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--tg-theme-bg-color);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            position: relative;
+            animation: modalIn 0.4s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .modal-header {
-            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .close-btn {
-            font-size: 28px;
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
             background: none;
             border: none;
             color: var(--tg-theme-text-color);
-            padding: 10px;
-        }
-
-        /* Roulette Engine */
-        .roulette-wrapper {
-            flex: 1;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            border-radius: 50%;
+            transition: var(--transition);
         }
 
-        .roulette-container {
-            width: 100%;
-            height: 140px;
-            position: relative;
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Opening Animation */
+        .opening-container {
+            height: 200px;
             overflow: hidden;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            margin: 40px 0;
-            border: 2px solid rgba(255,255,255,0.05);
+            position: relative;
+            margin: 20px 0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
         }
 
-        .roulette-line {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: #ef4444;
-            z-index: 10;
-            transform: translateX(-50%);
-            box-shadow: 0 0 15px #ef4444;
-        }
-
-        .roulette-track {
+        .items-wheel {
             display: flex;
             position: absolute;
-            top: 10px;
+            top: 0;
             left: 0;
-            transition: transform 7s cubic-bezier(0.1, 0, 0.1, 1);
+            transition-timing-function: cubic-bezier(0.1, 0.7, 0.1, 1);
         }
 
-        .roulette-item {
-            min-width: 120px;
-            height: 120px;
-            margin: 0 5px;
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 12px;
+        .wheel-item {
+            width: 120px;
+            height: 200px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-bottom: 4px solid #ccc;
+            background: var(--tg-theme-secondary-bg-color);
+            margin-right: 2px;
+            border-radius: 10px;
         }
 
-        .roulette-item img, .roulette-item .emoji {
-            font-size: 40px;
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
+        .result-card {
+            text-align: center;
+            padding: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .result-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .result-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .result-price {
+            font-size: 32px;
+            color: gold;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-secondary-bg-color);
+            display: flex;
+            padding: 10px 0;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .footer-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 5px;
+            font-size: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .footer-tab.active {
+            color: var(--tg-theme-link-color);
+        }
+
+        .footer-tab i {
+            font-size: 20px;
             margin-bottom: 5px;
         }
 
-        .roulette-item .name {
-            font-size: 10px;
-            text-align: center;
-            padding: 0 4px;
-            opacity: 0.8;
+        /* Responsive */
+        @media (max-width: 480px) {
+            .cases-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .items-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
-        /* Win Result Overlay */
-        .win-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.95);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            text-align: center;
-            animation: fadeIn 0.5s ease;
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 800px;
+            }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* Animation */
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-20px, -20px) rotate(360deg); }
         }
 
-        .win-card {
-            background: var(--tg-theme-secondary-bg-color);
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 0 50px rgba(56, 189, 248, 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .win-img {
-            font-size: 80px;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .win-title {
-            font-size: 16px;
-            color: var(--tg-theme-hint-color);
-            text-transform: uppercase;
-        }
-
-        .win-name {
-            font-size: 28px;
-            font-weight: 800;
-            margin: 10px 0;
-        }
-
-        .win-price {
-            font-size: 20px;
-            color: #fbbf24;
-            font-weight: 700;
-        }
-
-        /* Drop List Styles */
-        .drop-list {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .drop-item {
-            display: flex;
-            align-items: center;
-            background: var(--tg-theme-secondary-bg-color);
-            margin-bottom: 10px;
-            padding: 12px;
-            border-radius: 15px;
-            position: relative;
-        }
-
-        .drop-img {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            margin-right: 15px;
-        }
-
-        .drop-info {
-            flex: 1;
-        }
-
-        .drop-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .drop-price {
-            font-size: 14px;
-            color: #fbbf24;
-        }
-
-        .drop-chance {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: rgba(0,0,0,0.3);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: var(--tg-theme-hint-color);
-        }
-
-        .btn-main {
-            background: var(--tg-theme-button-color);
-            color: white;
+        .spin-button {
+            background: var(--gold-gradient);
+            color: black;
             border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 15px;
+            padding: 15px 40px;
             font-size: 18px;
             font-weight: 700;
-            margin-top: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: var(--transition);
+            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
         }
 
-        /* Hide logic */
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* Loader */
-        #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--tg-theme-bg-color);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .spin-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.4);
         }
 
-        /* NFT Card Specific */
-        .nft-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
+        .spin-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-
-<div id="loader">
-    <div style="text-align: center;">
-        <div style="font-size: 50px; animation: bounce 1s infinite;">⭐</div>
-        <p>Загрузка...</p>
-    </div>
-</div>
-
-<div id="app">
-    <main id="page-cases" class="page active container">
-        <h1 class="section-title">Открыть кейсы</h1>
-        <div class="cases-grid" id="cases-container">
-            </div>
-    </main>
-
-    <main id="page-deposit" class="page container">
-        <h1 class="section-title">Пополнение</h1>
-        <div style="background: var(--tg-theme-secondary-bg-color); padding: 40px 20px; border-radius: 20px; text-align: center;">
-            <div style="font-size: 60px; margin-bottom: 20px;">🚧</div>
-            <h3>Раздел в разработке</h3>
-            <p style="color: var(--tg-theme-hint-color);">Пополнение баланса через Telegram Stars будет доступно скоро.</p>
+    <div class="app-container">
+        <div class="header">
+            <h1>🎁 Case Opening</h1>
+            <p>Открывай кейсы и получай уникальные предметы!</p>
         </div>
-    </main>
 
-    <main id="page-profile" class="page container">
-        <div class="profile-header">
-            <div class="avatar-container">
-                <img src="https://via.placeholder.com/100" id="user-avatar" class="avatar-img" alt="Avatar">
+        <div class="balance-card">
+            <div class="balance-info">
+                <h3>Ваш баланс</h3>
+                <div class="balance-amount">
+                    <i class="fas fa-star"></i>
+                    <span id="balance">150</span>
+                </div>
             </div>
-            <h2 class="user-name" id="user-name">Пользователь</h2>
-            <div class="balance-card">
-                <div class="balance-label">Мой баланс</div>
-                <div class="balance-value">
-                    <span id="user-balance">1000</span>
-                    <span style="font-size: 28px;">⭐</span>
+            <div class="balance-icon">
+                <i class="fas fa-gem" style="font-size: 36px; color: #5ec5ff;"></i>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab active" data-tab="cases">
+                <i class="fas fa-box-open"></i>
+                <span>Кейсы</span>
+            </div>
+            <div class="tab" data-tab="deposit">
+                <i class="fas fa-wallet"></i>
+                <span>Депозит</span>
+            </div>
+            <div class="tab" data-tab="profile">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </div>
+        </div>
+
+        <div id="cases-section" class="section active">
+            <h2 style="margin: 20px 0; font-size: 22px;">Доступные кейсы</h2>
+            <div class="cases-grid">
+                <!-- Case 1 -->
+                <div class="case-card free" data-case="free">
+                    <div class="case-icon">🎁</div>
+                    <div class="case-name">Бесплатный</div>
+                    <div class="case-price"><i class="fas fa-star"></i> 0</div>
+                    <button class="case-button open-btn">Открыть</button>
+                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                </div>
+                
+                <!-- Case 2 -->
+                <div class="case-card bumzh" data-case="bumzh">
+                    <div class="case-icon">📦</div>
+                    <div class="case-name">Бомж кейс</div>
+                    <div class="case-price"><i class="fas fa-star"></i> 25</div>
+                    <button class="case-button open-btn">Открыть</button>
+                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                </div>
+                
+                <!-- Case 3 -->
+                <div class="case-card normal" data-case="normal">
+                    <div class="case-icon">💎</div>
+                    <div class="case-name">Нормалик</div>
+                    <div class="case-price"><i class="fas fa-star"></i> 50</div>
+                    <button class="case-button open-btn">Открыть</button>
+                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                </div>
+                
+                <!-- Case 4 -->
+                <div class="case-card rocket" data-case="rocket">
+                    <div class="case-icon">🚀</div>
+                    <div class="case-name">Ракетка</div>
+                    <div class="case-price"><i class="fas fa-star"></i> 100</div>
+                    <button class="case-button open-btn">Открыть</button>
+                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
+                </div>
+                
+                <!-- Case 5 -->
+                <div class="case-card world" data-case="world">
+                    <div class="case-icon">🌍</div>
+                    <div class="case-name">Мир</div>
+                    <div class="case-price"><i class="fas fa-star"></i> 500</div>
+                    <button class="case-button open-btn">Открыть</button>
+                    <button class="case-button view-drop-btn" style="margin-top: 8px; background: rgba(255,255,255,0.1);">Что выпадает</button>
                 </div>
             </div>
         </div>
-    </main>
 
-    <nav class="tab-bar">
-        <div class="tab-item active" onclick="switchTab('cases', this)">
-            <span class="tab-icon">🎁</span>
+        <div id="deposit-section" class="section">
+            <div class="deposit-card">
+                <div class="deposit-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="deposit-title">В разработке</div>
+                <div class="deposit-text">
+                    Раздел депозита находится в разработке. Скоро вы сможете пополнять баланс Telegram Stars!
+                </div>
+                <button class="spin-button" style="background: var(--tg-theme-button-color); color: white;" onclick="alert('Функция в разработке')">
+                    Перейти к пополнению
+                </button>
+            </div>
+        </div>
+
+        <div id="profile-section" class="section">
+            <div class="profile-card">
+                <div class="profile-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-name" id="user-name">Гость</div>
+                <div class="profile-id" id="user-id">ID: 000000</div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: var(--radius); margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; font-size: 18px;">📊 Статистика</h3>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700;">12</div>
+                            <div style="font-size: 12px; opacity: 0.8;">Открыто кейсов</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700; color: gold;">350</div>
+                            <div style="font-size: 12px; opacity: 0.8;">Всего звёзд</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700;">3</div>
+                            <div style="font-size: 12px; opacity: 0.8;">NFT получено</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <h2 style="margin: 30px 0 20px 0; font-size: 20px;">🎁 Последние выигрыши</h2>
+            <div class="items-grid">
+                <div class="item-card">
+                    <div class="item-icon">🧸</div>
+                    <div class="item-name">Мишка</div>
+                    <div class="item-price">15 ⭐</div>
+                    <div class="item-chance">10%</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon">⭐</div>
+                    <div class="item-name">5 звезд</div>
+                    <div class="item-price">5 ⭐</div>
+                    <div class="item-chance">40%</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon">🎂</div>
+                    <div class="item-name">Тортик</div>
+                    <div class="item-price">50 ⭐</div>
+                    <div class="item-chance">5%</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-icon">🚀</div>
+                    <div class="item-name">Ракета</div>
+                    <div class="item-price">100 ⭐</div>
+                    <div class="item-chance">2%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for viewing drop -->
+    <div class="modal-overlay" id="drop-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">🎁 Что выпадает в кейсе</div>
+                <button class="modal-close" id="close-drop-modal">&times;</button>
+            </div>
+            <div id="drop-content">
+                <!-- Will be filled by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for opening case -->
+    <div class="modal-overlay" id="open-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="open-modal-title">Открытие кейса</div>
+                <button class="modal-close" id="close-open-modal">&times;</button>
+            </div>
+            <div id="open-content">
+                <div class="opening-container">
+                    <div class="items-wheel" id="items-wheel">
+                        <!-- Will be filled by JavaScript -->
+                    </div>
+                </div>
+                <button class="spin-button" id="spin-btn">Крутить!</button>
+                <div id="result-content" style="display: none;">
+                    <!-- Will be filled by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Tabs -->
+    <div class="footer">
+        <div class="footer-tab active" data-tab="cases">
+            <i class="fas fa-box-open"></i>
             <span>Кейсы</span>
         </div>
-        <div class="tab-item" onclick="switchTab('deposit', this)">
-            <span class="tab-icon">💳</span>
+        <div class="footer-tab" data-tab="deposit">
+            <i class="fas fa-wallet"></i>
             <span>Депозит</span>
         </div>
-        <div class="tab-item" onclick="switchTab('profile', this)">
-            <span class="tab-icon">👤</span>
+        <div class="footer-tab" data-tab="profile">
+            <i class="fas fa-user"></i>
             <span>Профиль</span>
         </div>
-    </nav>
-</div>
-
-<div id="modal-screen" class="modal">
-    <div class="modal-header">
-        <h3 id="modal-title">Кейс</h3>
-        <button class="close-btn" onclick="closeModal()">×</button>
     </div>
-    
-    <div id="modal-content-view" class="drop-list">
-        </div>
 
-    <div id="modal-roulette-view" class="roulette-wrapper" style="display: none;">
-        <div class="roulette-container">
-            <div class="roulette-line"></div>
-            <div class="roulette-track" id="roulette-track">
-                </div>
-        </div>
-        <div class="win-overlay" id="win-overlay">
-            <div class="win-card">
-                <div class="win-title">Вы выиграли!</div>
-                <div id="win-visual" class="win-img"></div>
-                <div id="win-name" class="win-name">Предмет</div>
-                <div id="win-price" class="win-price">0 ⭐</div>
-                <button class="btn-main" onclick="closeModal()">Забрать</button>
-            </div>
-        </div>
-        <button id="btn-open-start" class="btn-main" onclick="startSpin()">Открыть за <span id="btn-price-val">0</span> ⭐</button>
-    </div>
-</div>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
-
-    // App State
-    let balance = 1000;
-    let currentCase = null;
-    let isSpinning = false;
-
-    // Data Models
-    const ITEMS = {
-        STAR1: { name: "1 Звезда", icon: "⭐", price: 1, type: "currency", rarity: "common" },
-        BEAR: { name: "Мишка", icon: "🧸", price: 15, type: "gift", rarity: "rare" },
-        CAKE: { name: "Тортик", icon: "🎂", price: 50, type: "gift", rarity: "rare" },
-        ROCKET: { name: "Ракета", icon: "🚀", price: 100, type: "gift", rarity: "epic" },
-        CANDLE: { name: "B-day Candle", icon: "🕯️", img: "https://nft.tg/img/candle.png", price: 300, type: "nft", rarity: "legendary" },
-        TON_ROCK: { name: "TON Rock", icon: "💎", img: "https://nft.tg/img/rock.png", price: 500, type: "nft", rarity: "legendary" },
-        GOLD_CROWN: { name: "Gold Crown", icon: "👑", img: "https://nft.tg/img/crown.png", price: 800, type: "nft", rarity: "legendary" }
-    };
-
-    const CASES = [
-        {
-            id: 'free',
-            name: "Бесплатный",
-            icon: "📦",
-            price: 0,
-            items: [
-                { item: ITEMS.STAR1, chance: 95 },
-                { item: ITEMS.BEAR, chance: 4 },
-                { item: ITEMS.CAKE, chance: 1 }
-            ]
-        },
-        {
-            id: 'cheap',
-            name: "Бомж кейс",
-            icon: "🗑️",
-            price: 25,
-            items: [
-                { item: ITEMS.STAR1, chance: 60 },
-                { item: ITEMS.BEAR, chance: 30 },
-                { item: ITEMS.CAKE, chance: 10 }
-            ]
-        },
-        {
-            id: 'normal',
-            name: "Нормалик",
-            icon: "💼",
-            price: 50,
-            items: [
-                { item: ITEMS.BEAR, chance: 50 },
-                { item: ITEMS.CAKE, chance: 40 },
-                { item: ITEMS.ROCKET, chance: 10 }
-            ]
-        },
-        {
-            id: 'rocket',
-            name: "Ракетка",
-            icon: "🚀",
-            price: 100,
-            items: [
-                { item: ITEMS.CAKE, chance: 60 },
-                { item: ITEMS.ROCKET, chance: 39.9 },
-                { item: ITEMS.CANDLE, chance: 0.1 }
-            ]
-        },
-        {
-            id: 'world',
-            name: "Мир",
-            icon: "🌍",
-            price: 500,
-            items: [
-                { item: ITEMS.CANDLE, chance: 50 },
-                { item: ITEMS.TON_ROCK, chance: 35 },
-                { item: ITEMS.GOLD_CROWN, chance: 15 }
-            ]
-        }
-    ];
-
-    // Initialize UI
-    function init() {
-        // User Data
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('user-name').textContent = user.username || (user.first_name + ' ' + (user.last_name || ''));
-            if (user.photo_url) {
-                document.getElementById('user-avatar').src = user.photo_url;
+    <script>
+        // Telegram Web App initialization
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        
+        // User data
+        const user = tg.initDataUnsafe.user;
+        let balance = 150;
+        
+        // Cases data
+        const casesData = {
+            free: {
+                name: "Бесплатный кейс",
+                price: 0,
+                items: [
+                    { icon: "⭐", name: "1 звезда", price: 1, chance: 90 },
+                    { icon: "🧸", name: "Мишка", price: 15, chance: 7 },
+                    { icon: "🎂", name: "Тортик", price: 50, chance: 3 }
+                ]
+            },
+            bumzh: {
+                name: "Бомж кейс",
+                price: 25,
+                items: [
+                    { icon: "⭐", name: "5 звезд", price: 5, chance: 70 },
+                    { icon: "🧸", name: "Мишка", price: 15, chance: 20 },
+                    { icon: "🎂", name: "Тортик", price: 50, chance: 9 },
+                    { icon: "⭐", name: "15 звезд", price: 15, chance: 1 }
+                ]
+            },
+            normal: {
+                name: "Нормалик",
+                price: 50,
+                items: [
+                    { icon: "🧸", name: "Мишка", price: 15, chance: 50 },
+                    { icon: "🎂", name: "Тортик", price: 50, chance: 40 },
+                    { icon: "🚀", name: "Ракета", price: 100, chance: 9.9 },
+                    { icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/BDayCandle-122842.jpg" }
+                ]
+            },
+            rocket: {
+                name: "Ракетка",
+                price: 100,
+                items: [
+                    { icon: "🎂", name: "Тортик", price: 50, chance: 60 },
+                    { icon: "🚀", name: "Ракета", price: 100, chance: 39.9 },
+                    { icon: "🖼", name: "NFT B-day Candle", price: 300, chance: 0.1, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/BDayCandle-122842.jpg" }
+                ]
+            },
+            world: {
+                name: "Мир",
+                price: 500,
+                items: [
+                    { icon: "🖼", name: "NFT Moon", price: 300, chance: 40, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-moon.jpg" },
+                    { icon: "🖼", name: "NFT Star", price: 400, chance: 30, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-star.jpg" },
+                    { icon: "🖼", name: "NFT Galaxy", price: 500, chance: 20, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-galaxy.jpg" },
+                    { icon: "🖼", name: "NFT Universe", price: 600, chance: 8, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-universe.jpg" },
+                    { icon: "🖼", name: "NFT Infinity", price: 800, chance: 2, image: "https://cdn4.telesco.pe/file/ABCDEFGHIJKLMNOPQRSTUVWXYZ/nft-infinity.jpg" }
+                ]
+            }
+        };
+        
+        // DOM elements
+        const balanceElement = document.getElementById('balance');
+        const userNameElement = document.getElementById('user-name');
+        const userAvatarElement = document.getElementById('user-avatar');
+        const userIdElement = document.getElementById('user-id');
+        const sections = document.querySelectorAll('.section');
+        const tabs = document.querySelectorAll('.tab, .footer-tab');
+        const dropModal = document.getElementById('drop-modal');
+        const openModal = document.getElementById('open-modal');
+        const closeDropModal = document.getElementById('close-drop-modal');
+        const closeOpenModal = document.getElementById('close-open-modal');
+        const dropContent = document.getElementById('drop-content');
+        const openContent = document.getElementById('open-content');
+        const itemsWheel = document.getElementById('items-wheel');
+        const spinBtn = document.getElementById('spin-btn');
+        const resultContent = document.getElementById('result-content');
+        const openModalTitle = document.getElementById('open-modal-title');
+        
+        // Initialize user data
+        function initUserData() {
+            if (user) {
+                userNameElement.textContent = user.username || `Пользователь ${user.id}`;
+                userIdElement.textContent = `ID: ${user.id}`;
+                
+                if (user.photo_url) {
+                    userAvatarElement.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
+                }
+                
+                // Simulate loading user balance from server
+                balance = Math.floor(Math.random() * 500) + 50;
+                updateBalance();
             }
         }
-        updateBalanceDisplay();
-
-        // Render Cases
-        const container = document.getElementById('cases-container');
-        CASES.forEach(c => {
-            const card = document.createElement('div');
-            card.className = 'case-card';
-            card.innerHTML = `
-                <span class="case-icon">${c.icon}</span>
-                <div class="case-name">${c.name}</div>
-                <div class="case-price">${c.price} ⭐</div>
-                <button class="btn-view" onclick="showCasePreview('${c.id}')">Шансы</button>
-                <button class="btn-main" style="padding: 10px; font-size: 14px; margin-top: 10px;" onclick="openRoulette('${c.id}')">Открыть</button>
-            `;
-            container.appendChild(card);
-        });
-
-        setTimeout(() => {
-            document.getElementById('loader').style.display = 'none';
-        }, 1000);
-    }
-
-    function updateBalanceDisplay() {
-        document.getElementById('user-balance').textContent = balance;
-    }
-
-    function switchTab(tabId, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + tabId).classList.add('active');
         
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function showCasePreview(caseId) {
-        const c = CASES.find(x => x.id === caseId);
-        currentCase = c;
+        // Update balance display
+        function updateBalance() {
+            balanceElement.textContent = balance;
+        }
         
-        document.getElementById('modal-title').textContent = c.name;
-        document.getElementById('modal-content-view').style.display = 'block';
-        document.getElementById('modal-roulette-view').style.display = 'none';
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update active tab
+            tabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Show active section
+            sections.forEach(section => {
+                if (section.id === `${tabName}-section`) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+        }
         
-        const list = document.getElementById('modal-content-view');
-        list.innerHTML = '';
-        
-        c.items.forEach(i => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'drop-item';
-            itemDiv.innerHTML = `
-                <div class="drop-img">${i.item.icon}</div>
-                <div class="drop-info">
-                    <div class="drop-name">${i.item.name}</div>
-                    <div class="drop-price">${i.item.price} ⭐</div>
+        // Show drop modal
+        function showDropModal(caseType) {
+            const caseData = casesData[caseType];
+            dropContent.innerHTML = `
+                <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--tg-theme-link-color);">${caseData.name}</h3>
+                <p style="margin-bottom: 20px; opacity: 0.8;">В этом кейсе вы можете выиграть:</p>
+                <div class="items-grid">
+                    ${caseData.items.map(item => `
+                        <div class="item-card">
+                            <div class="item-icon">${item.icon}</div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">${item.price} ⭐</div>
+                            <div class="item-chance">${item.chance}%</div>
+                        </div>
+                    `).join('')}
                 </div>
-                <div class="drop-chance">${i.chance}%</div>
             `;
-            list.appendChild(itemDiv);
+            dropModal.classList.add('active');
+        }
+        
+        // Show open modal
+        function showOpenModal(caseType) {
+            const caseData = casesData[caseType];
+            openModalTitle.textContent = `Открытие: ${caseData.name}`;
+            
+            // Check if user has enough balance
+            if (balance < caseData.price && caseType !== 'free') {
+                alert(`Недостаточно звезд! Нужно: ${caseData.price} ⭐`);
+                return;
+            }
+            
+            // Prepare wheel items (repeat items for smooth animation)
+            itemsWheel.innerHTML = '';
+            for (let i = 0; i < 30; i++) {
+                const item = caseData.items[Math.floor(Math.random() * caseData.items.length)];
+                itemsWheel.innerHTML += `
+                    <div class="wheel-item" data-price="${item.price}" data-name="${item.name}" data-icon="${item.icon}">
+                        <div style="font-size: 48px; margin-bottom: 10px;">${item.icon}</div>
+                        <div style="font-size: 12px; text-align: center;">${item.name}</div>
+                    </div>
+                `;
+            }
+            
+            // Reset UI
+            resultContent.style.display = 'none';
+            itemsWheel.style.display = 'flex';
+            spinBtn.style.display = 'block';
+            spinBtn.disabled = false;
+            spinBtn.textContent = 'Крутить!';
+            
+            // Deduct price if not free
+            if (caseType !== 'free') {
+                balance -= caseData.price;
+                updateBalance();
+            }
+            
+            openModal.classList.add('active');
+            currentCase = caseType;
+        }
+        
+        // Spin the wheel
+        let isSpinning = false;
+        let currentCase = null;
+        
+        spinBtn.addEventListener('click', () => {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'Крутится...';
+            
+            const caseData = casesData[currentCase];
+            const items = caseData.items;
+            
+            // Calculate weighted random item
+            const totalWeight = items.reduce((sum, item) => sum + item.chance, 0);
+            let random = Math.random() * totalWeight;
+            let selectedItem = items[0];
+            
+            for (const item of items) {
+                random -= item.chance;
+                if (random <= 0) {
+                    selectedItem = item;
+                    break;
+                }
+            }
+            
+            // Animate wheel
+            const wheel = itemsWheel;
+            const itemWidth = 122; // width + margin
+            const spinDuration = 3000; // 3 seconds
+            const startTime = Date.now();
+            let startPosition = 0;
+            const selectedIndex = Math.floor(Math.random() * 15) + 10; // Random position in the middle
+            const targetPosition = -(selectedIndex * itemWidth);
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                
+                // Easing function (ease-out)
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const currentPosition = startPosition + (targetPosition - startPosition) * easeOut;
+                
+                wheel.style.transform = `translateX(${currentPosition}px)`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animation complete
+                    setTimeout(() => {
+                        showResult(selectedItem);
+                    }, 500);
+                }
+            }
+            
+            requestAnimationFrame(animate);
         });
         
-        document.getElementById('modal-screen').style.display = 'flex';
-    }
-
-    function openRoulette(caseId) {
-        const c = CASES.find(x => x.id === caseId);
-        currentCase = c;
-
-        if (balance < c.price) {
-            tg.showAlert("Недостаточно звезд на балансе!");
-            return;
-        }
-
-        document.getElementById('modal-title').textContent = "Открытие: " + c.name;
-        document.getElementById('modal-content-view').style.display = 'none';
-        document.getElementById('modal-roulette-view').style.display = 'flex';
-        document.getElementById('win-overlay').style.display = 'none';
-        document.getElementById('btn-open-start').style.display = 'block';
-        document.getElementById('btn-price-val').textContent = c.price;
-        
-        prepareRouletteTrack();
-        document.getElementById('modal-screen').style.display = 'flex';
-    }
-
-    function prepareRouletteTrack() {
-        const track = document.getElementById('roulette-track');
-        track.style.transition = 'none';
-        track.style.transform = 'translateX(0)';
-        track.innerHTML = '';
-
-        // Generate 50 items for scrolling
-        for (let i = 0; i < 60; i++) {
-            const randomItem = getRandomItem(currentCase.items);
-            const itemEl = document.createElement('div');
-            itemEl.className = 'roulette-item';
-            itemEl.style.borderBottomColor = getRarityColor(randomItem.rarity);
-            itemEl.innerHTML = `
-                <span class="emoji">${randomItem.icon}</span>
-                <span class="name">${randomItem.name}</span>
+        // Show result
+        function showResult(item) {
+            itemsWheel.style.display = 'none';
+            spinBtn.style.display = 'none';
+            
+            // Add winnings to balance
+            balance += item.price;
+            updateBalance();
+            
+            resultContent.style.display = 'block';
+            resultContent.innerHTML = `
+                <div class="result-card">
+                    <div class="result-icon">${item.icon}</div>
+                    <div class="result-name">${item.name}</div>
+                    <div class="result-price">+${item.price} ⭐</div>
+                    <p style="margin-top: 20px; opacity: 0.8;">Поздравляем! Вы выиграли ${item.name}!</p>
+                    <button class="spin-button" onclick="closeOpenModal()" style="margin-top: 20px; background: var(--tg-theme-button-color);">
+                        Отлично!
+                    </button>
+                </div>
             `;
-            track.appendChild(itemEl);
+            
+            isSpinning = false;
         }
-    }
-
-    function getRandomItem(items) {
-        const rand = Math.random() * 100;
-        let cumulative = 0;
-        for (const i of items) {
-            cumulative += i.chance;
-            if (rand <= cumulative) return i.item;
+        
+        // Close modals
+        function closeDropModalFunc() {
+            dropModal.classList.remove('active');
         }
-        return items[0].item;
-    }
-
-    function getRarityColor(rarity) {
-        switch(rarity) {
-            case 'legendary': return '#eab308';
-            case 'epic': return '#a855f7';
-            case 'rare': return '#3b82f6';
-            default: return '#94a3b8';
+        
+        function closeOpenModal() {
+            openModal.classList.remove('active');
+            isSpinning = false;
         }
-    }
-
-    function startSpin() {
-        if (isSpinning) return;
-        if (balance < currentCase.price) return;
-
-        isSpinning = true;
-        balance -= currentCase.price;
-        updateBalanceDisplay();
-        tg.HapticFeedback.notificationOccurred('success');
-
-        const track = document.getElementById('roulette-track');
-        const itemWidth = 130; // 120px + 10px margin
-        const winIndex = 45; // The 45th item will be the winner
         
-        // Predetermine winner
-        const winner = getRandomItem(currentCase.items);
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initUserData();
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchTab(tab.dataset.tab);
+                });
+            });
+            
+            // Case buttons
+            document.querySelectorAll('.view-drop-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const caseCard = e.target.closest('.case-card');
+                    const caseType = caseCard.dataset.case;
+                    showDropModal(caseType);
+                });
+            });
+            
+            document.querySelectorAll('.open-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const caseCard = e.target.closest('.case-card');
+                    const caseType = caseCard.dataset.case;
+                    showOpenModal(caseType);
+                });
+            });
+            
+            // Modal close buttons
+            closeDropModal.addEventListener('click', closeDropModalFunc);
+            closeOpenModal.addEventListener('click', closeOpenModal);
+            
+            // Close modal on overlay click
+            dropModal.addEventListener('click', (e) => {
+                if (e.target === dropModal) closeDropModalFunc();
+            });
+            
+            openModal.addEventListener('click', (e) => {
+                if (e.target === openModal) closeOpenModal();
+            });
+            
+            // Simulate Telegram events
+            if (!window.Telegram) {
+                console.log('Running outside Telegram, using mock data');
+                // Mock Telegram object for testing outside Telegram
+                window.Telegram = {
+                    WebApp: {
+                        initDataUnsafe: {
+                            user: {
+                                id: 123456789,
+                                username: 'telegram_user',
+                                first_name: 'Telegram',
+                                last_name: 'User'
+                            }
+                        },
+                        expand: () => console.log('App expanded'),
+                        ready: () => console.log('App ready'),
+                        showAlert: (msg) => alert(msg)
+                    }
+                };
+                initUserData();
+            }
+        });
         
-        // Inject winner at index
-        const winNode = track.children[winIndex];
-        winNode.innerHTML = `<span class="emoji">${winner.icon}</span><span class="name">${winner.name}</span>`;
-        winNode.style.borderBottomColor = getRarityColor(winner.rarity);
-
-        // Animation
-        const offset = (winIndex * itemWidth) - (window.innerWidth / 2) + (itemWidth / 2);
-        
-        track.style.transition = 'transform 7s cubic-bezier(0.1, 0, 0.1, 1)';
-        track.style.transform = `translateX(-${offset}px)`;
-
-        document.getElementById('btn-open-start').style.display = 'none';
-
-        setTimeout(() => {
-            showWin(winner);
-        }, 7500);
-    }
-
-    function showWin(item) {
-        isSpinning = false;
-        balance += item.price; // Add won item value back to "virtual balance"
-        updateBalanceDisplay();
-        
-        const overlay = document.getElementById('win-overlay');
-        document.getElementById('win-visual').textContent = item.icon;
-        document.getElementById('win-name').textContent = item.name;
-        document.getElementById('win-price').textContent = `+${item.price} ⭐`;
-        
-        overlay.style.display = 'flex';
-        tg.HapticFeedback.notificationOccurred('success');
-    }
-
-    function closeModal() {
-        if (isSpinning) return;
-        document.getElementById('modal-screen').style.display = 'none';
-    }
-
-    // Start
-    init();
-
-</script>
+        // Add some visual effects
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.case-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
 </body>
 </html>
-
