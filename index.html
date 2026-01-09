@@ -467,7 +467,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Opening Animation - ПРОСТАЯ РАБОЧАЯ ВЕРСИЯ */
+        /* Opening Animation */
         .opening-container {
             height: 200px;
             overflow: hidden;
@@ -519,6 +519,19 @@
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
             transform: scale(1.05);
             z-index: 5;
+        }
+
+        .wheel-item.winner::before {
+            content: '🎉';
+            position: absolute;
+            top: -15px;
+            font-size: 24px;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
         }
 
         .result-card {
@@ -892,17 +905,15 @@
 
     <script>
         // ============================================
-        // ПРОСТОЙ И РАБОЧИЙ КОД
+        // ПРАВИЛЬНАЯ ЛОГИКА: выигрыш определяется ДО анимации
         // ============================================
         
         // Инициализация Telegram Web App
         function initTelegram() {
-            // Проверяем, открыто ли в Telegram Web App
             if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
                 return window.Telegram.WebApp;
             } else {
                 console.log('Приложение открыто вне Telegram, используется демо-режим');
-                // Создаем заглушку для тестирования
                 return {
                     expand: function() {},
                     ready: function() {},
@@ -924,7 +935,6 @@
         tg.expand();
         tg.ready();
         
-        // Данные пользователя из Telegram
         const user = tg.initDataUnsafe?.user;
         
         // Состояние приложения
@@ -991,6 +1001,10 @@
             }
         };
         
+        // Глобальные переменные для текущего кейса
+        let currentCaseType = null;
+        let winningItem = null;
+        
         // Загружаем сохраненные данные
         function loadSavedData() {
             const saved = localStorage.getItem('caseAppState');
@@ -1016,7 +1030,6 @@
             document.getElementById('stats-stars').textContent = appState.totalStarsWon;
             document.getElementById('stats-nft').textContent = appState.nftCount;
             
-            // Обновляем последние выигрыши
             const lastWinsContainer = document.getElementById('last-wins');
             lastWinsContainer.innerHTML = '';
             
@@ -1045,7 +1058,6 @@
             const userAvatar = document.getElementById('user-avatar');
             
             if (user) {
-                // Имя пользователя
                 if (user.username) {
                     userName.textContent = '@' + user.username;
                 } else if (user.first_name || user.last_name) {
@@ -1054,14 +1066,11 @@
                     userName.textContent = 'Пользователь';
                 }
                 
-                // ID пользователя
                 userId.textContent = `ID: ${user.id || 'не указан'}`;
                 
-                // Аватар
                 if (user.photo_url) {
-                    userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
+                    userAvatar.innerHTML = `<img src="${user.photo_url}" alt="Аватар" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fas fa-user\"></i>';">`;
                 } else {
-                    // Градиент по умолчанию
                     const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
                     const colorIndex = user.id ? user.id % colors.length : 0;
                     userAvatar.style.background = `linear-gradient(135deg, ${colors[colorIndex]} 0%, ${colors[colorIndex]}80 100%)`;
@@ -1141,8 +1150,6 @@
         }
         
         // Открытие кейса
-        let currentCaseType = null;
-        
         function openCase(caseType) {
             const caseData = casesData[caseType];
             currentCaseType = caseType;
@@ -1152,6 +1159,10 @@
                 showNotification(`Недостаточно звёзд! Нужно: ${caseData.price} ⭐`);
                 return;
             }
+            
+            // ВАЖНО: определяем выигрышный предмет СЕЙЧАС, до начала анимации!
+            winningItem = getRandomItem(caseData.items);
+            console.log('Выигрышный предмет определен:', winningItem);
             
             // Списываем стоимость (кроме бесплатного)
             if (caseType !== 'free') {
@@ -1165,24 +1176,34 @@
             document.getElementById('open-modal-title').textContent = `Открытие: ${caseData.name}`;
             document.getElementById('open-modal').classList.add('active');
             
-            // Подготавливаем колесо
-            prepareWheel(caseData);
+            // Подготавливаем колесо с УЖЕ ИЗВЕСТНЫМ выигрышным предметом
+            prepareWheel(caseData, winningItem);
         }
         
-        // Подготовка колеса
-        function prepareWheel(caseData) {
+        // Подготовка колеса с выигрышным предметом в нужной позиции
+        function prepareWheel(caseData, winItem) {
             const wheel = document.getElementById('items-wheel');
             wheel.innerHTML = '';
             wheel.style.transform = 'translateX(0)';
             
-            // Создаем 30 случайных элементов для прокрутки
-            for (let i = 0; i < 30; i++) {
-                const randomItem = caseData.items[Math.floor(Math.random() * caseData.items.length)];
+            // Создаем колесо из 40 элементов
+            // Выигрышный предмет будет на позиции 15 (под стрелкой в конце)
+            for (let i = 0; i < 40; i++) {
+                let item;
+                if (i === 15) {
+                    // На позиции 15 ставим выигрышный предмет
+                    item = winItem;
+                } else {
+                    // Остальные - случайные
+                    item = caseData.items[Math.floor(Math.random() * caseData.items.length)];
+                }
+                
                 const wheelItem = document.createElement('div');
                 wheelItem.className = 'wheel-item';
+                wheelItem.dataset.index = i;
                 wheelItem.innerHTML = `
-                    <div style="font-size: 48px; margin-bottom: 10px;">${randomItem.icon}</div>
-                    <div style="font-size: 12px; text-align: center;">${randomItem.name}</div>
+                    <div style="font-size: 48px; margin-bottom: 10px;">${item.icon}</div>
+                    <div style="font-size: 12px; text-align: center;">${item.name}</div>
                 `;
                 wheel.appendChild(wheelItem);
             }
@@ -1196,48 +1217,62 @@
         
         // Прокрутка колеса
         function spinWheel() {
-            if (appState.isSpinning || !currentCaseType) return;
+            if (appState.isSpinning || !currentCaseType || !winningItem) return;
             
             appState.isSpinning = true;
             const spinBtn = document.getElementById('spin-btn');
             spinBtn.disabled = true;
             spinBtn.innerHTML = '<div class="loading"></div>';
             
-            const caseData = casesData[currentCaseType];
             const wheel = document.getElementById('items-wheel');
             
-            // Определяем выигрышный предмет
-            const winningItem = getRandomItem(caseData.items);
-            
-            // Простая анимация прокрутки
+            // Анимация прокрутки
             const itemWidth = 122;
-            const spinDuration = 3000;
+            const spinDuration = 4000; // 4 секунды
             const startTime = Date.now();
-            const startPosition = 0;
-            const targetPosition = -(15 * itemWidth); // Останавливаемся на 15-м элементе
+            
+            // Стрелка находится в центре (позиция 50% ширины контейнера)
+            // Выигрышный предмет на позиции 15
+            // Нужно сдвинуть колесо так, чтобы элемент с индексом 15 оказался под стрелкой
+            
+            // Расчет конечной позиции:
+            // Ширина контейнера ~600px (5 элементов по 120px)
+            // Центр контейнера = 300px
+            // Центр элемента с индексом 15: (15 * itemWidth) + (itemWidth / 2) = (15 * 122) + 61 = 1891px
+            // Чтобы элемент оказался в центре: 300 - 1891 = -1591px
+            const targetPosition = -1591;
+            
+            // Добавляем несколько полных оборотов для эффекта
+            const fullSpins = 3;
+            const totalItems = 40;
+            const totalTargetPosition = targetPosition - (fullSpins * totalItems * itemWidth);
             
             function animate() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / spinDuration, 1);
                 
-                // easing функция для плавного замедления
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                const currentPosition = startPosition + (targetPosition - startPosition) * easeOut;
+                // Сложная easing функция для реалистичной прокрутки
+                let easeProgress;
+                if (progress < 0.7) {
+                    // Быстрое вращение в начале
+                    easeProgress = progress / 0.7;
+                } else {
+                    // Медленное замедление в конце
+                    const remaining = (progress - 0.7) / 0.3;
+                    easeProgress = 0.7 + (1 - Math.pow(1 - remaining, 3)) * 0.3;
+                }
                 
+                const currentPosition = totalTargetPosition * easeProgress;
                 wheel.style.transform = `translateX(${currentPosition}px)`;
                 
                 // Подсвечиваем выигрышный элемент в конце
-                if (progress > 0.9) {
+                if (progress > 0.95) {
                     const items = wheel.querySelectorAll('.wheel-item');
-                    const centerIndex = 15 % items.length;
                     items.forEach((item, idx) => {
-                        if (idx === centerIndex) {
+                        if (idx === 15) {
                             item.classList.add('winner');
-                            // Заменяем на выигрышный предмет
-                            item.innerHTML = `
-                                <div style="font-size: 48px; margin-bottom: 10px;">${winningItem.icon}</div>
-                                <div style="font-size: 12px; text-align: center;">${winningItem.name}</div>
-                            `;
+                        } else {
+                            item.classList.remove('winner');
                         }
                     });
                 }
@@ -1312,13 +1347,13 @@
             document.getElementById('open-modal').classList.remove('active');
             appState.isSpinning = false;
             currentCaseType = null;
+            winningItem = null;
             // Восстанавливаем колесо для следующего открытия
             document.getElementById('items-wheel').style.display = 'flex';
         }
         
         // Переключение вкладок
         function switchTab(tabName) {
-            // Обновляем активные вкладки
             document.querySelectorAll('.tab, .footer-tab').forEach(tab => {
                 if (tab.dataset.tab === tabName) {
                     tab.classList.add('active');
@@ -1327,7 +1362,6 @@
                 }
             });
             
-            // Показываем активную секцию
             document.querySelectorAll('.section').forEach(section => {
                 if (section.id === `${tabName}-section`) {
                     section.classList.add('active');
@@ -1339,16 +1373,9 @@
         
         // Инициализация приложения
         function initApp() {
-            // Загружаем сохраненные данные
             loadSavedData();
-            
-            // Инициализируем профиль
             initUserProfile();
-            
-            // Обновляем интерфейс
             updateUI();
-            
-            // Назначаем обработчики событий
             
             // Вкладки
             document.querySelectorAll('.tab, .footer-tab').forEach(tab => {
@@ -1357,15 +1384,13 @@
                 });
             });
             
-            // Кнопки кейсов (делегирование событий)
+            // Кнопки кейсов
             document.addEventListener('click', function(e) {
-                // Кнопка "Что выпадает"
                 if (e.target.classList.contains('view-drop-btn')) {
                     const caseType = e.target.dataset.case;
                     showCaseDrop(caseType);
                 }
                 
-                // Кнопка "Открыть"
                 if (e.target.classList.contains('open-btn')) {
                     const caseType = e.target.dataset.case;
                     openCase(caseType);
@@ -1404,10 +1429,10 @@
             console.log('Приложение инициализировано');
         }
         
-        // Запуск приложения при загрузке страницы
+        // Запуск приложения
         document.addEventListener('DOMContentLoaded', initApp);
         
-        // Делаем функции доступными глобально для onclick атрибутов
+        // Делаем функции доступными глобально
         window.closeOpenModal = closeOpenModal;
         window.closeDropModal = closeDropModal;
     </script>
