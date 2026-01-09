@@ -512,6 +512,7 @@
             border: 2px solid transparent;
             transition: all 0.3s ease;
             position: relative;
+            flex-shrink: 0;
         }
 
         .wheel-item.winner {
@@ -905,7 +906,7 @@
 
     <script>
         // ============================================
-        // ПРАВИЛЬНАЯ ЛОГИКА: выигрыш определяется ДО анимации
+        // РАБОЧАЯ ЛОГИКА С ПРАВИЛЬНОЙ АНИМАЦИЕЙ
         // ============================================
         
         // Инициализация Telegram Web App
@@ -1004,6 +1005,7 @@
         // Глобальные переменные для текущего кейса
         let currentCaseType = null;
         let winningItem = null;
+        let winPosition = 20; // Позиция выигрышного элемента в колесе
         
         // Загружаем сохраненные данные
         function loadSavedData() {
@@ -1160,9 +1162,9 @@
                 return;
             }
             
-            // ВАЖНО: определяем выигрышный предмет СЕЙЧАС, до начала анимации!
+            // Определяем выигрышный предмет ДО анимации
             winningItem = getRandomItem(caseData.items);
-            console.log('Выигрышный предмет определен:', winningItem);
+            console.log('Выигрышный предмет:', winningItem);
             
             // Списываем стоимость (кроме бесплатного)
             if (caseType !== 'free') {
@@ -1176,7 +1178,7 @@
             document.getElementById('open-modal-title').textContent = `Открытие: ${caseData.name}`;
             document.getElementById('open-modal').classList.add('active');
             
-            // Подготавливаем колесо с УЖЕ ИЗВЕСТНЫМ выигрышным предметом
+            // Подготавливаем колесо с выигрышным предметом
             prepareWheel(caseData, winningItem);
         }
         
@@ -1185,13 +1187,14 @@
             const wheel = document.getElementById('items-wheel');
             wheel.innerHTML = '';
             wheel.style.transform = 'translateX(0)';
+            wheel.style.display = 'flex';
             
-            // Создаем колесо из 40 элементов
-            // Выигрышный предмет будет на позиции 15 (под стрелкой в конце)
-            for (let i = 0; i < 40; i++) {
+            // Создаем колесо из 30 элементов
+            // Выигрышный предмет будет на позиции winPosition (20)
+            for (let i = 0; i < 30; i++) {
                 let item;
-                if (i === 15) {
-                    // На позиции 15 ставим выигрышный предмет
+                if (i === winPosition) {
+                    // На заданной позиции ставим выигрышный предмет
                     item = winItem;
                 } else {
                     // Остальные - случайные
@@ -1225,51 +1228,42 @@
             spinBtn.innerHTML = '<div class="loading"></div>';
             
             const wheel = document.getElementById('items-wheel');
+            const itemWidth = 122; // Ширина одного элемента
             
-            // Анимация прокрутки
-            const itemWidth = 122;
+            // Простая анимация с плавным замедлением
+            // Стрелка находится в центре контейнера (примерно на 2-3 элементе от начала)
+            // Нужно прокрутить так, чтобы элемент на позиции winPosition оказался под стрелкой
+            
+            // Контейнер показывает примерно 5 элементов
+            // Центр контейнера - это позиция элемента с индексом 2 (третий элемент)
+            // Значит нужно сдвинуть колесо так, чтобы элемент winPosition оказался на позиции 2
+            
+            const targetIndex = 2; // Позиция под стрелкой
+            const offset = (winPosition - targetIndex) * itemWidth;
+            
+            // Добавляем несколько полных прокруток для эффекта
+            const fullSpins = 5;
+            const totalItems = 30;
+            const totalOffset = offset - (fullSpins * totalItems * itemWidth);
+            
             const spinDuration = 4000; // 4 секунды
             const startTime = Date.now();
-            
-            // Стрелка находится в центре (позиция 50% ширины контейнера)
-            // Выигрышный предмет на позиции 15
-            // Нужно сдвинуть колесо так, чтобы элемент с индексом 15 оказался под стрелкой
-            
-            // Расчет конечной позиции:
-            // Ширина контейнера ~600px (5 элементов по 120px)
-            // Центр контейнера = 300px
-            // Центр элемента с индексом 15: (15 * itemWidth) + (itemWidth / 2) = (15 * 122) + 61 = 1891px
-            // Чтобы элемент оказался в центре: 300 - 1891 = -1591px
-            const targetPosition = -1591;
-            
-            // Добавляем несколько полных оборотов для эффекта
-            const fullSpins = 3;
-            const totalItems = 40;
-            const totalTargetPosition = targetPosition - (fullSpins * totalItems * itemWidth);
             
             function animate() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / spinDuration, 1);
                 
-                // Сложная easing функция для реалистичной прокрутки
-                let easeProgress;
-                if (progress < 0.7) {
-                    // Быстрое вращение в начале
-                    easeProgress = progress / 0.7;
-                } else {
-                    // Медленное замедление в конце
-                    const remaining = (progress - 0.7) / 0.3;
-                    easeProgress = 0.7 + (1 - Math.pow(1 - remaining, 3)) * 0.3;
-                }
+                // easing функция: быстро в начале, медленно в конце
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const currentPosition = totalOffset * easeOut;
                 
-                const currentPosition = totalTargetPosition * easeProgress;
                 wheel.style.transform = `translateX(${currentPosition}px)`;
                 
                 // Подсвечиваем выигрышный элемент в конце
                 if (progress > 0.95) {
                     const items = wheel.querySelectorAll('.wheel-item');
                     items.forEach((item, idx) => {
-                        if (idx === 15) {
+                        if (idx === winPosition) {
                             item.classList.add('winner');
                         } else {
                             item.classList.remove('winner');
