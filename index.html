@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>1case Web App</title>
+    <title>1case Web App - Visible Odds</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -11,10 +11,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
         :root {
-            --tg-theme-bg-color: #0d1017;
+            --tg-theme-bg-color: #0f1218;
             --accent-blue: #007aff;
-            --glass: rgba(255, 255, 255, 0.04);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -26,72 +26,35 @@
             user-select: none;
         }
 
-        .glass {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-        }
-
-        /* Snow Particles */
-        .snow-container {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .snowflake {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.2;
-            animation: fall linear infinite;
-        }
+        .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; }
+        
+        /* Snow Animation */
+        .snow-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 0; }
+        .snowflake { position: absolute; background: white; border-radius: 50%; opacity: 0.3; animation: fall linear infinite; }
         @keyframes fall { to { transform: translateY(100vh); } }
 
-        /* Roulette */
-        .roulette-wrapper {
-            position: relative;
-            width: 100%;
-            height: 130px;
-            overflow: hidden;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-        }
-        .roulette-container {
-            display: flex;
-            position: absolute;
-            left: 0;
-            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
-        }
-        .roulette-item {
-            min-width: 110px;
-            height: 130px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-right: 1px solid rgba(255,255,255,0.05);
-        }
-        .roulette-pointer {
-            position: absolute;
-            top: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 3px; height: 100%;
-            background: var(--accent-blue);
-            z-index: 10;
-            box-shadow: 0 0 15px var(--accent-blue);
-        }
+        /* Roulette Styling */
+        .roulette-wrapper { position: relative; width: 100%; height: 120px; overflow: hidden; border-radius: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
+        .roulette-container { display: flex; position: absolute; left: 0; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); }
+        .roulette-item { min-width: 100px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.05); }
+        .roulette-pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: var(--accent-blue); z-index: 10; box-shadow: 0 0 15px var(--accent-blue); }
 
-        /* Layout */
-        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; z-index: 1; position: relative; }
+        .premium-border { border: 2px solid #facc15; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); }
+        .nav-active { color: var(--accent-blue); }
+        .page { display: none; height: calc(100vh - 80px); overflow-y: auto; padding: 20px; padding-top: 10px; z-index: 1; position: relative; }
         .page.active { display: block; }
-        .nav-active { color: var(--accent-blue); opacity: 1 !important; }
-        .premium-border { border: 2px solid #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.2); }
-        
         ::-webkit-scrollbar { display: none; }
+
+        /* Odds Badge */
+        .odds-badge {
+            background: rgba(0, 122, 255, 0.2);
+            color: #70b5ff;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 6px;
+            font-weight: bold;
+            border: 1px solid rgba(0, 122, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -99,64 +62,65 @@
     <div class="snow-container" id="snow"></div>
 
     <header class="flex justify-between items-center p-4 z-10 relative">
-        <div class="flex items-center gap-2 glass px-4 py-2">
-            <span class="text-yellow-400">⭐</span>
-            <span id="header-balance" class="font-bold">0.00</span>
+        <div class="flex items-center gap-2 glass px-3 py-1">
+            <span class="text-yellow-400 text-sm">⭐</span>
+            <span id="header-balance" class="font-bold text-sm">0.99</span>
         </div>
-        <div class="w-10 h-10 rounded-full border border-blue-500 overflow-hidden glass" id="user-avatar">
-            <img src="https://via.placeholder.com/40" id="pfp-img" class="w-full h-full object-cover">
+        <div id="user-avatar" class="w-8 h-8 rounded-full border border-blue-500 overflow-hidden">
+            <img src="https://via.placeholder.com/32" id="pfp-img">
         </div>
     </header>
 
     <main>
         <section id="page-cases" class="page active">
-            <h2 class="text-2xl font-bold mb-5">Open Cases</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Cases</h2>
+                <span class="text-[10px] opacity-50 px-2 py-1 glass">Verifiable Odds <i data-lucide="shield-check" class="inline w-3 h-3"></i></span>
+            </div>
             <div class="grid grid-cols-2 gap-4" id="cases-grid"></div>
         </section>
 
         <section id="page-deposit" class="page">
             <div class="flex flex-col items-center justify-center h-full text-center">
-                <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-                    <i data-lucide="wallet" class="w-10 h-10 text-blue-500"></i>
-                </div>
-                <h2 class="text-xl font-bold">Stars Deposit</h2>
-                <p class="text-gray-400 mt-2 px-10 text-sm">Transfer Stars via Telegram Bot to top up your balance.</p>
-                <button class="mt-6 bg-blue-600 px-8 py-3 rounded-xl font-bold opacity-50 cursor-not-allowed">Coming Soon</button>
+                <i data-lucide="shopping-cart" class="w-16 h-16 text-blue-500 mb-4"></i>
+                <h2 class="text-xl font-bold">Market</h2>
+                <p class="text-gray-400 mt-2 px-10">P2P Trading coming soon.</p>
             </div>
         </section>
 
         <section id="page-profile" class="page">
-            <div class="glass p-5 mb-6 flex items-center gap-4 border-l-4 border-blue-500">
-                <img src="" id="profile-pfp" class="w-14 h-14 rounded-xl">
+            <div class="glass p-6 mb-4 flex items-center gap-4">
+                <img src="" id="profile-pfp" class="w-16 h-16 rounded-2xl border-2 border-blue-500">
                 <div>
-                    <h3 id="profile-name" class="text-lg font-bold">Player</h3>
-                    <p id="stats-summary" class="text-[10px] text-blue-400 font-bold uppercase">0 Cases Opened</p>
+                    <h3 id="profile-name" class="text-xl font-bold">User</h3>
+                    <p class="text-xs text-blue-400">Inventory Value: <span id="inv-value">0</span> ⭐</p>
                 </div>
             </div>
-
-            <h3 class="font-bold mb-4 flex items-center gap-2 px-1 text-sm text-gray-400">
-                <i data-lucide="shopping-bag" class="w-4 h-4"></i> YOUR INVENTORY
-            </h3>
-            <div id="inventory-grid" class="grid grid-cols-3 gap-3 pb-24"></div>
+            <h3 class="font-bold mb-3 flex items-center gap-2 px-1">Inventory</h3>
+            <div id="inventory-grid" class="grid grid-cols-3 gap-2 pb-10"></div>
         </section>
     </main>
 
     <div id="case-modal" class="fixed inset-0 z-50 flex items-end justify-center hidden">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
         <div class="glass w-full max-w-md p-6 rounded-t-[30px] z-10 translate-y-full transition-transform duration-300" id="modal-content">
             <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
-            <h2 id="modal-title" class="text-2xl font-bold text-center">Case</h2>
-            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold"></p>
+            
+            <h2 id="modal-title" class="text-2xl font-bold text-center mb-1">Case</h2>
+            <p id="modal-price" class="text-center text-blue-400 mb-6 font-bold text-sm">50 ⭐</p>
 
             <div id="roulette-view" class="hidden">
-                <div class="roulette-wrapper mb-8">
+                <div class="roulette-wrapper mb-6">
                     <div class="roulette-pointer"></div>
                     <div class="roulette-container" id="roulette-strip"></div>
                 </div>
             </div>
 
             <div id="droplist-view">
-                <p class="text-[10px] opacity-40 uppercase font-bold mb-4 tracking-widest text-center">Potential Drops</p>
+                <div class="flex justify-between items-center mb-3">
+                    <p class="text-[10px] opacity-50 uppercase font-bold tracking-wider">Loot Table & Odds</p>
+                    <p class="text-[9px] text-green-500 font-bold">Fair Play Guaranteed</p>
+                </div>
                 <div class="grid grid-cols-4 gap-2 mb-8" id="drop-list-items"></div>
             </div>
 
@@ -166,160 +130,121 @@
         </div>
     </div>
 
-    <div id="item-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-6">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closeItemModal()"></div>
-        <div class="glass w-full max-w-xs p-8 rounded-[30px] z-10 text-center scale-90 transition-transform duration-200" id="item-modal-content">
-            <div id="item-icon-large" class="text-6xl mb-4"></div>
-            <h2 id="item-name-large" class="text-2xl font-bold"></h2>
-            <p id="item-rarity-text" class="text-[10px] font-bold text-blue-400 mb-6 tracking-widest uppercase"></p>
-            <div class="flex flex-col gap-3">
-                <button id="sell-btn" class="w-full bg-green-500/10 border border-green-500/30 text-green-400 py-3 rounded-xl font-bold active:scale-95 transition-all">Sell Item</button>
-                <button onclick="tg.showAlert('Withdrawals are disabled.')" class="w-full bg-white/5 text-white/30 py-3 rounded-xl font-bold">Withdraw</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/5 flex justify-around items-center px-4 z-20">
-        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 opacity-40 transition-all nav-active">
-            <i data-lucide="layout-grid"></i><span class="text-[9px] font-bold">CASES</span>
+    <nav class="fixed bottom-0 left-0 right-0 h-20 glass rounded-none border-t border-white/10 flex justify-around items-center px-4 z-20">
+        <button onclick="showPage('cases')" id="nav-cases" class="flex flex-col items-center gap-1 nav-active">
+            <i data-lucide="package"></i><span class="text-[10px] font-bold">CASES</span>
         </button>
-        <button onclick="showPage('deposit')" id="nav-deposit" class="flex flex-col items-center gap-1 opacity-40 transition-all">
-            <i data-lucide="plus-circle"></i><span class="text-[9px] font-bold">DEPOSIT</span>
+        <button onclick="showPage('deposit')" id="nav-deposit" class="flex flex-col items-center gap-1 opacity-50">
+            <i data-lucide="trending-up"></i><span class="text-[10px] font-bold">MARKET</span>
         </button>
-        <button onclick="showPage('profile')" id="nav-profile" class="flex flex-col items-center gap-1 opacity-40 transition-all">
-            <i data-lucide="user"></i><span class="text-[9px] font-bold">PROFILE</span>
+        <button onclick="showPage('profile')" id="nav-profile" class="flex flex-col items-center gap-1 opacity-50">
+            <i data-lucide="user"></i><span class="text-[10px] font-bold">PROFILE</span>
         </button>
     </nav>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
         const ITEMS = {
-            S1: { name: '1 Star', emoji: '⭐', value: 1, rarity: 'common' },
-            S5: { name: '5 Stars', emoji: '⭐', value: 5, rarity: 'common' },
-            BEAR: { name: 'Bear Gift', emoji: '🧸', value: 15, rarity: 'rare' },
-            CAKE: { name: 'Cake Gift', emoji: '🎂', value: 50, rarity: 'legendary' },
-            ROCKET: { name: 'Rocket Gift', emoji: '🚀', value: 100, rarity: 'legendary' },
-            CANDLE: { name: 'NFT Candle', emoji: '🕯️', value: 500, rarity: 'mythic', nft: true },
-            MONKEY: { name: 'NFT Monkey', emoji: '🐒', value: 850, rarity: 'mythic', nft: true }
+            S1: { id: 1, name: '1 Star', emoji: '⭐', value: 1, rarity: 'common' },
+            S5: { id: 2, name: '5 Stars', emoji: '⭐', value: 5, rarity: 'common' },
+            BEAR: { id: 3, name: 'Bear', emoji: '🧸', value: 15, rarity: 'rare' },
+            CAKE: { id: 4, name: 'Cake', emoji: '🎂', value: 50, rarity: 'legendary' },
+            ROCKET: { id: 5, name: 'Rocket', emoji: '🚀', value: 100, rarity: 'legendary' },
+            CANDLE: { id: 6, name: 'B-day Candle', emoji: '🕯️', value: 500, rarity: 'nft', nft: true },
+            GOLD_MONKEY: { id: 7, name: 'Gold Monkey', emoji: '🐒', value: 800, rarity: 'nft', nft: true }
         };
 
         const CASES = [
-            { id: 'free', name: 'Free', price: 0, loot: [ITEMS.S1, ITEMS.S1, ITEMS.BEAR, ITEMS.CAKE], color: 'from-green-500/20' },
-            { id: 'bum', name: 'Bum', price: 25, loot: [ITEMS.S5, ITEMS.BEAR, ITEMS.BEAR, ITEMS.CAKE], color: 'from-orange-500/20' },
-            { id: 'normal', name: 'Normal', price: 50, loot: [ITEMS.BEAR, ITEMS.CAKE, ITEMS.CAKE, ITEMS.ROCKET], color: 'from-blue-500/20' },
-            { id: 'rocket', name: 'Rocket', price: 100, loot: [ITEMS.CAKE, ITEMS.ROCKET, ITEMS.ROCKET, ITEMS.CANDLE], color: 'from-purple-500/20' },
-            { id: 'world', name: 'World', price: 500, loot: [ITEMS.CANDLE, ITEMS.MONKEY], color: 'from-yellow-500/20' }
+            { id: 'free', name: 'Free', price: 0, color: 'from-green-500', loot: [
+                { item: ITEMS.S1, chance: 80 }, { item: ITEMS.BEAR, chance: 15 }, { item: ITEMS.CAKE, chance: 5 }
+            ]},
+            { id: 'bum', name: 'Bum', price: 25, color: 'from-orange-500', loot: [
+                { item: ITEMS.S5, chance: 70 }, { item: ITEMS.BEAR, chance: 25 }, { item: ITEMS.CAKE, chance: 5 }
+            ]},
+            { id: 'normal', name: 'Normal', price: 50, color: 'from-blue-500', loot: [
+                { item: ITEMS.BEAR, chance: 60 }, { item: ITEMS.CAKE, chance: 30 }, { item: ITEMS.ROCKET, chance: 10 }
+            ]},
+            { id: 'rocket', name: 'Rocket', price: 100, color: 'from-purple-500', loot: [
+                { item: ITEMS.CAKE, chance: 70 }, { item: ITEMS.ROCKET, chance: 29.9 }, { item: ITEMS.CANDLE, chance: 0.1 }
+            ]},
+            { id: 'world', name: 'World', price: 500, color: 'from-yellow-500', loot: [
+                { item: ITEMS.CANDLE, chance: 95 }, { item: ITEMS.GOLD_MONKEY, chance: 5 }
+            ]}
         ];
 
-        let balance = parseFloat(localStorage.getItem('bal')) || 250.00;
-        let inventory = JSON.parse(localStorage.getItem('inv')) || [];
-        let statsOpened = parseInt(localStorage.getItem('stats')) || 0;
+        let balance = parseFloat(localStorage.getItem('balance')) || 100.00;
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
         let activeCase = null;
-        let spinning = false;
+        let isSpinning = false;
+        const tg = window.Telegram.WebApp;
 
         function init() {
             lucide.createIcons();
             createSnow();
             renderCases();
             updateUI();
-            
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                document.getElementById('profile-name').innerText = user.first_name;
-                if (user.photo_url) {
-                    document.getElementById('pfp-img').src = user.photo_url;
-                    document.getElementById('profile-pfp').src = user.photo_url;
-                }
+            if (tg.initDataUnsafe?.user) {
+                const u = tg.initDataUnsafe.user;
+                document.getElementById('profile-name').innerText = u.first_name;
+                if(u.photo_url) document.querySelectorAll('[id*="pfp"]').forEach(el => el.src = u.photo_url);
             }
+            tg.expand();
         }
 
         function createSnow() {
             const container = document.getElementById('snow');
-            for(let i=0; i<40; i++) {
+            for(let i=0; i<30; i++) {
                 const flake = document.createElement('div');
                 flake.className = 'snowflake';
                 flake.style.left = Math.random() * 100 + 'vw';
                 flake.style.width = flake.style.height = Math.random() * 3 + 2 + 'px';
                 flake.style.animationDuration = Math.random() * 3 + 4 + 's';
-                flake.style.animationDelay = Math.random() * 5 + 's';
                 container.appendChild(flake);
             }
-        }
-
-        function updateUI() {
-            document.getElementById('header-balance').innerText = balance.toFixed(2);
-            document.getElementById('stats-summary').innerText = `${statsOpened} Cases Opened`;
-            
-            const grid = document.getElementById('inventory-grid');
-            grid.innerHTML = '';
-            inventory.forEach((item, idx) => {
-                const el = document.createElement('div');
-                el.className = `glass p-3 flex flex-col items-center justify-center aspect-square text-center ${item.nft ? 'premium-border' : ''}`;
-                el.onclick = () => openItemDetail(item, idx);
-                el.innerHTML = `<span class="text-3xl mb-1">${item.emoji}</span><span class="text-[8px] font-bold opacity-60 truncate w-full">${item.name}</span>`;
-                grid.appendChild(el);
-            });
-
-            localStorage.setItem('bal', balance);
-            localStorage.setItem('inv', JSON.stringify(inventory));
-            localStorage.setItem('stats', statsOpened);
         }
 
         function renderCases() {
             const grid = document.getElementById('cases-grid');
             CASES.forEach(c => {
                 const card = document.createElement('div');
-                card.className = `glass bg-gradient-to-br ${c.color} p-5 flex flex-col items-center gap-3 active:scale-95 transition-all cursor-pointer`;
+                card.className = `glass bg-gradient-to-br ${c.color}/10 p-5 flex flex-col items-center gap-3 active:scale-95 transition-transform cursor-pointer`;
                 card.onclick = () => openCaseModal(c);
-                card.innerHTML = `<div class="text-4xl">📦</div><div><p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-blue-400 font-bold">${c.price} ⭐</p></div>`;
+                card.innerHTML = `<div class="text-3xl">📦</div><div class="text-center"><p class="font-bold text-sm">${c.name}</p><p class="text-[10px] text-blue-400 font-bold">${c.price === 0 ? 'CLAIM' : c.price + ' ⭐'}</p></div>`;
                 grid.appendChild(card);
             });
         }
 
-        function showPage(id) {
-            if(spinning) return;
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${id}`).classList.add('active');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
-            document.getElementById(`nav-${id}`).classList.add('nav-active');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
         function openCaseModal(c) {
             activeCase = c;
-            document.getElementById('modal-title').innerText = c.name + " Case";
-            document.getElementById('modal-price').innerText = c.price + " ⭐";
+            document.getElementById('modal-title').innerText = c.name;
+            document.getElementById('modal-price').innerText = c.price === 0 ? "Daily Free" : `${c.price} ⭐`;
             
-            const drops = document.getElementById('drop-list-items');
-            drops.innerHTML = '';
-            c.loot.forEach(item => {
-                drops.innerHTML += `<div class="glass p-2 flex flex-col items-center"><span class="text-xl">${item.emoji}</span></div>`;
+            const dropList = document.getElementById('drop-list-items');
+            dropList.innerHTML = '';
+            c.loot.forEach(l => {
+                const div = document.createElement('div');
+                div.className = "flex flex-col items-center glass p-2 gap-1 relative overflow-hidden";
+                div.innerHTML = `
+                    <span class="odds-badge">${l.chance}%</span>
+                    <span class="text-xl">${l.item.emoji}</span>
+                    <span class="text-[8px] opacity-50 truncate w-full text-center">${l.item.name}</span>
+                `;
+                dropList.appendChild(div);
             });
 
-            document.getElementById('roulette-view').classList.add('hidden');
-            document.getElementById('droplist-view').classList.remove('hidden');
-            document.getElementById('open-btn').style.display = 'block';
-            
             const modal = document.getElementById('case-modal');
             modal.classList.remove('hidden');
             setTimeout(() => document.getElementById('modal-content').style.transform = 'translateY(0)', 10);
-        }
-
-        function closeModal() {
-            if(spinning) return;
-            document.getElementById('modal-content').style.transform = 'translateY(100%)';
-            setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300);
+            document.getElementById('roulette-view').classList.add('hidden');
+            document.getElementById('droplist-view').classList.remove('hidden');
+            document.getElementById('open-btn').style.display = 'block';
         }
 
         function startOpening() {
-            if (balance < activeCase.price) return tg.showAlert("Insufficient balance!");
-            
-            spinning = true;
+            if (balance < activeCase.price) return tg.showAlert("Insufficient Stars");
+            isSpinning = true;
             balance -= activeCase.price;
             updateUI();
-            tg.HapticFeedback.impactOccurred('heavy');
+            tg.HapticFeedback.impactOccurred('medium');
 
             document.getElementById('droplist-view').classList.add('hidden');
             document.getElementById('open-btn').style.display = 'none';
@@ -328,55 +253,70 @@
             const strip = document.getElementById('roulette-strip');
             strip.style.transition = 'none';
             strip.style.transform = 'translateX(0)';
-            
-            let html = '';
-            for(let i=0; i<60; i++) {
-                const item = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)];
-                html += `<div class="roulette-item"><span class="text-3xl">${item.emoji}</span></div>`;
-            }
-            strip.innerHTML = html;
 
-            const winner = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)];
-            const winningIdx = 55;
-            strip.children[winningIdx].innerHTML = `<span class="text-3xl">${winner.emoji}</span>`;
-            if(winner.nft) strip.children[winningIdx].classList.add('premium-border');
+            // Weighted Random Selection
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+            let winnerItem = activeCase.loot[0].item;
+            for(let l of activeCase.loot) {
+                cumulative += l.chance;
+                if(rand <= cumulative) { winnerItem = l.item; break; }
+            }
+
+            // Fill Strip
+            let stripHTML = '';
+            for(let i=0; i<60; i++) {
+                const randomLoot = activeCase.loot[Math.floor(Math.random() * activeCase.loot.length)].item;
+                stripHTML += `<div class="roulette-item"><span class="text-3xl">${randomLoot.emoji}</span></div>`;
+            }
+            strip.innerHTML = stripHTML;
+            
+            const winningIndex = 55;
+            strip.children[winningIndex].innerHTML = `<span class="text-3xl">${winnerItem.emoji}</span>`;
+            if(winnerItem.nft) strip.children[winningIndex].classList.add('premium-border');
 
             setTimeout(() => {
-                const offset = (winningIdx * 110) - (document.querySelector('.roulette-wrapper').offsetWidth / 2) + 55;
-                strip.style.transition = 'transform 5s cubic-bezier(0.15, 0, 0.15, 1)';
-                strip.style.transform = `translateX(-${offset}px)`;
+                const itemWidth = 100;
+                const center = document.querySelector('.roulette-wrapper').offsetWidth / 2;
+                const targetX = (winningIndex * itemWidth) - center + (itemWidth / 2);
+                strip.style.transition = 'transform 5s cubic-bezier(0.1, 0, 0.1, 1)';
+                strip.style.transform = `translateX(-${targetX}px)`;
             }, 50);
 
             setTimeout(() => {
-                spinning = false;
-                statsOpened++;
-                inventory.unshift(winner);
+                inventory.unshift(winnerItem);
+                if(winnerItem.value && winnerItem.name.includes('Star')) balance += winnerItem.value;
                 updateUI();
+                isSpinning = false;
                 tg.HapticFeedback.notificationOccurred('success');
-                tg.showConfirm(`Won ${winner.name}!`, () => closeModal());
+                tg.showConfirm(`Won: ${winnerItem.name}`, () => closeModal());
             }, 5500);
         }
 
-        function openItemDetail(item, idx) {
-            document.getElementById('item-icon-large').innerText = item.emoji;
-            document.getElementById('item-name-large').innerText = item.name;
-            document.getElementById('item-rarity-text').innerText = item.rarity;
-            document.getElementById('sell-btn').innerText = `Sell for ${item.value} ⭐`;
-            document.getElementById('sell-btn').onclick = () => {
-                balance += item.value;
-                inventory.splice(idx, 1);
-                updateUI();
-                closeItemModal();
-                tg.HapticFeedback.notificationOccurred('success');
-            };
-            document.getElementById('item-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('item-modal-content').classList.remove('scale-90'), 10);
+        function updateUI() {
+            document.getElementById('header-balance').innerText = balance.toFixed(2);
+            document.getElementById('inv-value').innerText = inventory.reduce((acc, curr) => acc + curr.value, 0);
+            const invGrid = document.getElementById('inventory-grid');
+            invGrid.innerHTML = '';
+            inventory.forEach(item => {
+                const d = document.createElement('div');
+                d.className = `glass p-2 flex flex-col items-center aspect-square justify-center ${item.nft ? 'premium-border' : ''}`;
+                d.innerHTML = `<span class="text-2xl">${item.emoji}</span><span class="text-[8px] opacity-60 mt-1">${item.name}</span>`;
+                invGrid.appendChild(d);
+            });
+            localStorage.setItem('balance', balance);
+            localStorage.setItem('inventory', JSON.stringify(inventory));
         }
 
-        function closeItemModal() {
-            document.getElementById('item-modal-content').classList.add('scale-90');
-            setTimeout(() => document.getElementById('item-modal').classList.add('hidden'), 200);
+        function showPage(p) {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${p}`).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.add('opacity-50'));
+            document.getElementById(`nav-${p}`).classList.remove('opacity-50');
+            tg.HapticFeedback.impactOccurred('light');
         }
+
+        function closeModal() { if(!isSpinning) { document.getElementById('modal-content').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById('case-modal').classList.add('hidden'), 300); } }
 
         window.onload = init;
     </script>
